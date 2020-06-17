@@ -1,0 +1,2 @@
+class StringIterationRunner(object):
+    pass
