@@ -9,6 +9,7 @@ def grompp():
   tprfile = "topol{}.tpr".format(rank)
   prep =  gmx.commandline_operation(executable = "gmx",
                                     arguments = ["grompp"],
+                                    input_files= {'-n': 'index.ndx'},
                                     output_files={'-o': tprfile})
   prep.run()
   print("grompp :\n" +str(prep.output.erroroutput.result()))

@@ -1,4 +1,3 @@
-title                   = ADP-MPI 
 ; Run parameters
 integrator              = md        ; leap-frog integrator
 nsteps                  = 50000    ; 
@@ -19,7 +18,6 @@ lincs_iter              = 1         ; accuracy of LINCS
 lincs_order             = 4         ; also related to accuracy
 ; Neighborsearching
 cutoff-scheme           = Verlet    ; Buffered neighbor searching
-ns_type                 = grid      ; search neighboring grid cells
 nstlist                 = 10        ; 20 fs, largely irrelevant with Verlet scheme
 rcoulomb                = 1.0       ; short-range electrostatic cutoff (in nm)
 rvdw                    = 1.0       ; short-range van der Waals cutoff (in nm)
@@ -45,3 +43,26 @@ pbc                     = xyz       ; 3-D PBC
 DispCorr                = EnerPres  ; account for cut-off vdW scheme
 ; Velocity generation
 gen_vel                 = no        ; Velocity generation is off 
+
+; Pull code
+pull                   = yes      
+pull-ngroups           = 5                  
+pull-group1-name  	   = C0
+pull-group2-name  	   = N
+pull-group3-name  	   = C-alpha
+pull-group4-name  	   = C
+pull-group5-name  	   = N2
+
+pull-ncoords			= 2
+pull-coord1-geometry	= angle
+pull-coord1-groups	    = 1 2 3 4
+pull-coord1-k			= 0
+pull-coord2-geometry	= angle
+pull-coord2-groups	    = 2 3 4 5
+pull-coord2-k			= 0
+
+
+pull-print-components			= no ; output pull coordinates
+pull-nstxout            = 50000                ; Step interval to output the coordinate values to the pullx.xvg.
+pull-nstfout			= 0
+
