@@ -1,0 +1,1 @@
+An example of running short ensemble simulations in a HPC MPI environment. This is useful for testing and benchmarking your HPC environment. It does not use the string method.
