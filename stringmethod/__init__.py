@@ -4,12 +4,12 @@ String method in python using gmxapi
 See https://github.com/delemottelab/string-method-gmxapi for more info.
 
 """
-import sys
 import logging
-import os
+from logging import Logger
 
+from . import mpi
 
-logger = logging.getLogger("stringmethod")
+logger: Logger = logging.getLogger("stringmethod-{}".format(mpi.rank))
 VERSION = "1.0.0"
 
-#__all__ = []
+__all__ = ['config', 'steeredmd', 'stringmd', 'mdtools', 'logger']

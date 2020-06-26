@@ -1,10 +1,7 @@
 {
   "simu_id": "adp",
   "output_dir": "output",
+  "input_dir": "output",
   "n_cvs": "2",
-  "swarm_size": 16,
-  "n_points": 10,
-  "initial_string": null,
-  "fixed_endpoints": true,
   "version": 1.0
 }
