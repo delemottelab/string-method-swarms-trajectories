@@ -24,10 +24,8 @@ def grompp(structure_file: str, mdp_file: str, topology_file: str, index_file: s
     return prep
 
 
-def mdrun(tpr_files: list, mdp_properties: Optional[dict] = None):
-    # Providing several .tpr files will launch an ensemble simu.
-    # No need to control MPI in python here, gmxapi does that for you
-    simulation_input = gmx.read_tpr(tpr_files)
+def mdrun(tpr_file: str, mdp_properties: Optional[dict] = None):
+    simulation_input = gmx.read_tpr(tpr_file)
     modified_input = gmx.modify_input(input=simulation_input, parameters=mdp_properties)
     md = gmx.mdrun(input=modified_input)
     md.run()

@@ -1,7 +1,5 @@
 {
   "simu_id": "adp",
-  "output_dir": "output",
-  "input_dir": "output",
   "n_cvs": "2",
   "version": 1.0
 }

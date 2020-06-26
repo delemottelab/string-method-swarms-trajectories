@@ -1,6 +1,6 @@
 import argparse
 
-import stringmethod as sm
+from stringmethod import *
 
 
 def parse_args():
@@ -12,17 +12,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def run(conf: sm.config.Config, start_mode: str = 'auto', iteration: int = 0) -> None:
-    sm.logger.debug("Using config %s", conf)
+def run(conf: config.Config, start_mode, iteration) -> None:
+    logger.debug("Using config %s", conf)
     if start_mode == 'string' or start_mode == 'auto':
-        r = sm.stringmd.StringIterationRunner(config=conf,
-                                              iteration=None if start_mode == 'auto' else iteration,
-                                              append=start_mode == 'auto')
+        r = stringmd.StringIterationRunner(config=conf,
+                                           iteration=iteration,
+                                           append=start_mode == 'auto')
         r.run()
         if start_mode == 'auto':
             return run(conf, start_mode='postprocessing')
     elif start_mode == 'steered':
-        r = sm.steeredmd.SteeredRunner(conf)
+        r = steeredmd.SteeredRunner(conf)
         r.run()
         return run(conf, start_mode='string', iteration=0)
     else:
@@ -31,9 +31,9 @@ def run(conf: sm.config.Config, start_mode: str = 'auto', iteration: int = 0) ->
 
 
 if __name__ == "__main__":
-    sm.logger.info("----------------Starting string of swarms simulation by delemottelab 2017-2020------------")
+    logger.info("----------------Starting string of swarms simulation by delemottelab 2017-2020------------")
     args = parse_args()
-    conf = sm.config.load_config(args.config_file, args.start_mode)
-    run(conf)
+    conf = config.load_config(args.config_file)
+    run(conf, args.start_mode, args.iteration)
 
-    sm.logger.info("----------------Finished------------")
+    logger.info("----------------Finished------------")
