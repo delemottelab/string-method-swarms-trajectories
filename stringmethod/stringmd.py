@@ -1,7 +1,8 @@
 import os
+import shutil
 from dataclasses import dataclass
 from os.path import abspath
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import numpy as np
 
@@ -41,9 +42,9 @@ class StringIterationRunner(object):
             if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                 continue
             point_path = "{}/{}/{}/".format(self.config.md_dir, self.iteration, point_idx)
-            os.makedirs(point_path, exist_ok=True)
+            os.makedirs(point_path + "restrained", exist_ok=True)
             for s in range(self.config.swarm_size):
-                os.makedirs("{}/s{}".format(point_path, s), exist_ok=True)
+                os.makedirs("{}s{}".format(point_path, s), exist_ok=True)
         return True
 
     def _run_restrained(self):
@@ -52,33 +53,31 @@ class StringIterationRunner(object):
             for point_idx, point in enumerate(self.string):
                 if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                     continue
-                tpr_file = abspath("{}/{}/{}/topol.tpr".format(
+                string_restraints = dict()
+                for cv_idx, position in enumerate(point):
+                    string_restraints['pull-coord{}-init'.format(cv_idx + 1)] = position
+                mdp_file = self._create_restrained_mdp_file(point_idx, string_restraints)
+                output_dir = abspath("{}/{}/{}/restrained/".format(
                     self.config.md_dir,
                     self.iteration,
-                    point_idx,
+                    point_idx
                 ))
+                tpr_file = abspath("{}/topol.tpr".format(output_dir))
                 grompp_args = dict(
-                    mdp_file=abspath("{}/{}".format(self.config.mdp_dir, "restrained.mdp")),
-                    index_file=abspath("{}/{}".format(self.config.topology_dir, "index.ndx")),
-                    topology_file=abspath("{}/{}".format(self.config.topology_dir, "topol.top")),
-                    structure_file=abspath("{}/{}/{}/confout.gro".format(
+                    mdp_file=mdp_file,
+                    index_file="{}/index.ndx".format(self.config.topology_dir),
+                    topology_file="{}/topol.top".format(self.config.topology_dir),
+                    structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
                         self.config.md_dir,
                         self.iteration - 1,
                         point_idx
                     )),
                     tpr_file=tpr_file,
-                    mdp_output_file=abspath("{}/{}/{}/mdout.mdp".format(
-                        self.config.md_dir,
-                        self.iteration,
-                        point_idx,
-                    )),
+                    mdp_output_file="{}/mdout.mdp".format(output_dir)
                 )
-                string_restraints = dict()
-                for cv_idx, position in enumerate(point):
-                    string_restraints['pull-coord{}-init'.format(cv_idx)] = position
                 mdrun_args = dict(
+                    output_dir=output_dir,
                     tpr_file=tpr_file,
-                    mdp_properties=string_restraints
                 )
                 grompp_tasks.append(('grompp', grompp_args))
                 mdrun_tasks.append(('mdrun', mdrun_args))
@@ -95,3 +94,18 @@ class StringIterationRunner(object):
 
     def _get_string_filepath(self, iteration: int) -> str:
         return "{}/string{}.txt".format(self.config.string_dir, iteration)
+
+    def _create_restrained_mdp_file(self, point_idx: int, string_restraints: Dict[str, Any]) -> str:
+        # TODO use gmxapi#mdrun#override_input when it supports supports pull-coord1-init
+        mdp_template_file = abspath("{}/{}".format(self.config.mdp_dir, "restrained.mdp"))
+        mdp_file = abspath("{}/{}/{}/restrained/restrained.mdp".format(
+            self.config.md_dir,
+            self.iteration,
+            point_idx,
+        ))
+        shutil.copy(mdp_template_file, mdp_file)
+        with open(mdp_file, 'a') as f:
+            f.write("\n\n;--------automatically injected properties from python below----\n\n")
+            for k, v in string_restraints.items():
+                f.write("{}={}\n".format(k, v))
+        return mdp_file
