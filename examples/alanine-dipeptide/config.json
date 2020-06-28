@@ -1,5 +1,7 @@
 {
   "simu_id": "adp",
   "n_cvs": "2",
-  "version": 1.0
+  "version": 1.0,
+  "log_level": "DEBUG",
+  "fixed_endpoints": true
 }

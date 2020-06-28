@@ -5,15 +5,18 @@ import gmxapi as gmx
 from . import mpi, logger
 
 
-
-def grompp(structure_file: str, mdp_file: str, topology_file: str, index_file: str, tpr_file: str):
+def grompp(structure_file: str, mdp_file: str, topology_file: str, index_file: str, tpr_file: str,
+           mdp_output_file: str):
     input_files = {
         '-n': index_file,
         '-f': mdp_file,
         '-p': topology_file,
         '-c': structure_file,
     }
-    output_files = {'-o': tpr_file}
+    output_files = {
+        '-o': tpr_file,
+        '-po': mdp_output_file
+    }
     prep = gmx.commandline_operation(executable="gmx",
                                      arguments=["grompp"],
                                      input_files=input_files,

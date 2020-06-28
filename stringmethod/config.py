@@ -18,6 +18,7 @@ class Config(object):
     max_iterations: Optional[int] = 100
     fixed_endpoints: Optional[bool] = True
     version: Optional[str] = None
+    log_level: Optional[str] = 'INFO'
 
     def __post_init__(self):
         if self.version is None:

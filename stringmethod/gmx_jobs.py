@@ -20,7 +20,6 @@ class GmxMaster(object):
         self.master = Master(slaves)
         # WorkQueue is a convenient class that run slaves on a tasks queue
         self.work_queue = WorkQueue(self.master)
-        self.running = False
 
     def terminate_slaves(self):
         """
@@ -57,7 +56,11 @@ class GmxMaster(object):
             for slave_return_data in self.work_queue.get_completed_work():
                 done, message = slave_return_data
                 if done:
-                    print('Master: slave finished is task and says "%s"' % message)
+                    logger.debug('Master: slave finished its task with message "%s"', message)
+                else:
+                    logger.error("Job failed with message '%s'. Stopping all workers", message)
+                    self.terminate_slaves()
+                    return
 
             time.sleep(0.03)
 
@@ -71,15 +74,25 @@ class GmxSlave(Slave):
     def __init__(self):
         super(GmxSlave, self).__init__()
 
-    def do_work(self, data):
+    def run_all(self, tasks: List[Tuple[str, dict]]):
+        for t in tasks:
+            done, message = self.do_work(t)
+            if done:
+                logger.debug('Finished task with message "%s"', message)
+            else:
+                logger.error("Job failed with message '%s'. Interrupting", message)
+                break
+
+    def do_work(self, task: Tuple[str, dict]):
         try:
-            operation, args = data
+            operation, args = task
+            logger.debug("slave performing operation %s with args %s", operation, args)
             if operation == 'grompp':
                 mdtools.grompp(**args)
             elif operation == 'mdrun':
                 mdtools.mdrun(**args)
             else:
-                raise ValueError('Unknown task {}'.format(operation))
+                raise ValueError('Unknown task operation {}'.format(operation))
             return True, 'SUCCESS'
         except Exception as ex:
             logger.exception(ex)
@@ -88,7 +101,14 @@ class GmxSlave(Slave):
 
 def run(tasks: List[Tuple[str, dict]], step=None):
     global _instance
-    if mpi.is_root():
+    if mpi.n_ranks == 1:
+        # We're running this on a single MPI rank. No need for a master-slave setup
+        logger.info("Running all jobs on a single rank")
+        _instance = GmxSlave()
+        _instance.run_all(tasks)
+        logger.info("Finished with step %s on a single MPI rank", step)
+    elif mpi.is_root():
+        logger.info("Distributing all jobs to %s ranks", mpi.n_ranks)
         # TODO should start a slave on this rank as well to best utilize computational resources
         _instance = GmxMaster(slaves=range(1, mpi.n_ranks))
         _instance.run(tasks)

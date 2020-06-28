@@ -34,6 +34,7 @@ if __name__ == "__main__":
     logger.info("----------------Starting string of swarms simulation by delemottelab 2017-2020------------")
     args = parse_args()
     conf = config.load_config(args.config_file)
+    logger.setLevel(conf.log_level)
     run(conf, args.start_mode, args.iteration)
 
     logger.info("----------------Finished------------")

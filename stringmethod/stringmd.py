@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from os.path import abspath
 from typing import Optional
 
 import numpy as np
@@ -26,36 +27,51 @@ class StringIterationRunner(object):
             mpi.run_on_root_then_broadcast(lambda: self._compute_new_string()(), 'postprocessing')
 
     def _init(self):
+        input_string_path = self._get_string_filepath(self.iteration - 1)
+        if not os.path.exists(input_string_path):
+            logger.error(input_string_path)
+            return False
+        self.string = np.loadtxt(input_string_path)
         mpi.run_on_root_then_broadcast(lambda: self._setup_dirs(), 'iteration_init')
-        self.string = np.loadtxt(self._get_string_filepath(self.iteration - 1))
-        # if len(self.string) - 2 != mpi.n_ranks:
-        #     raise NotImplementedError("""Number of MPI ranks must be equal to the number of points on the string
-        #      minus the fixed endpoints""")
 
     def _setup_dirs(self) -> bool:
-        logger.info("Starting string iteration %s ", self.iteration)
-        os.makedirs("{}".format(self.config.string_dir))
-        os.makedirs("{}/{}".format(self.config.md_dir, self.iteration))
-        if not os.path.exists(self._get_string_filepath()):
-            logger.error("File %s does not exist", self._get_string_filepath())
-            return False
+        logger.info("creating directories for string iteration %s ", self.iteration)
+        os.makedirs("{}".format(self.config.string_dir), exist_ok=True)
+        for point_idx in range(self.string.shape[0]):
+            if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                continue
+            point_path = "{}/{}/{}/".format(self.config.md_dir, self.iteration, point_idx)
+            os.makedirs(point_path, exist_ok=True)
+            for s in range(self.config.swarm_size):
+                os.makedirs("{}/s{}".format(point_path, s), exist_ok=True)
         return True
 
     def _run_restrained(self):
         grompp_tasks, mdrun_tasks = [], []
         if mpi.is_root():
-            for idx, point in enumerate(self.string):
-                tpr_file = self._get_tpr_file(point)
+            for point_idx, point in enumerate(self.string):
+                if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                    continue
+                tpr_file = abspath("{}/{}/{}/topol.tpr".format(
+                    self.config.md_dir,
+                    self.iteration,
+                    point_idx,
+                ))
                 grompp_args = dict(
-                    mdp_file="{}/{}".format(self.config.mdp_dir, "restrained.mdp"),
-                    index_file="{}/{}".format(self.config.topology_dir, "index.ndx"),
-                    topology_file="{}/{}".format(self.config.topology_dir, "topol.top"),
-                    structure_file="{}/{}/{}/confout.gro".format(
-                        self.config.mdp_dir,
+                    mdp_file=abspath("{}/{}".format(self.config.mdp_dir, "restrained.mdp")),
+                    index_file=abspath("{}/{}".format(self.config.topology_dir, "index.ndx")),
+                    topology_file=abspath("{}/{}".format(self.config.topology_dir, "topol.top")),
+                    structure_file=abspath("{}/{}/{}/confout.gro".format(
+                        self.config.md_dir,
                         self.iteration - 1,
-                        idx
-                    ),
+                        point_idx
+                    )),
                     tpr_file=tpr_file,
+                    mdp_output_file=abspath("{}/{}/{}/mdout.mdp".format(
+                        self.config.md_dir,
+                        self.iteration,
+                        point_idx,
+                    )),
                 )
                 string_restraints = dict()
                 for cv_idx, position in enumerate(point):
@@ -79,10 +95,3 @@ class StringIterationRunner(object):
 
     def _get_string_filepath(self, iteration: int) -> str:
         return "{}/string{}.txt".format(self.config.string_dir, iteration)
-
-    def _get_tpr_file(self, point: int) -> str:
-        "{}/{}/{}/topol.tpr".format(
-            self.config.mdp_dir,
-            self.iteration,
-            point,
-        ),
