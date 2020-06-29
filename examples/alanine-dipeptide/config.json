@@ -2,6 +2,7 @@
   "simu_id": "adp",
   "n_cvs": 2,
   "version": 1.0,
+  "swarm_size": 16,
   "log_level": "DEBUG",
   "fixed_endpoints": true
 }

@@ -25,14 +25,13 @@ class StringIterationRunner(object):
             self._init()
             self._run_restrained()
             self._run_swarms()
-            mpi.run_on_root_then_broadcast(lambda: self._compute_new_string()(), 'postprocessing')
+            mpi.run_on_root_then_broadcast(lambda: self._compute_new_string(), 'postprocessing')
             self.iteration += 1
 
     def _init(self):
         input_string_path = self._get_string_filepath(self.iteration - 1)
         if not os.path.exists(input_string_path):
-            logger.error(input_string_path)
-            return False
+            raise IOError("File %s does not exist" % input_string_path)
         self.string = np.loadtxt(input_string_path)
         mpi.run_on_root_then_broadcast(lambda: self._setup_dirs(), 'iteration_init')
 
@@ -167,7 +166,8 @@ class StringIterationRunner(object):
         new_scaled_string = utils.reparametrize_path_iter(scaled_string,
                                                           arclength_weight=None)  # TODO compute arc weights
         new_string = new_scaled_string * scale + offset
-        np.save(self._get_string_filepath(self.iteration), new_string)
+        np.savetxt(self._get_string_filepath(self.iteration), new_string)
+        return True
 
     def _get_string_filepath(self, iteration: int) -> str:
         return "{}/string{}.txt".format(self.config.string_dir, iteration)
