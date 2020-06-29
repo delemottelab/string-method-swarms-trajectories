@@ -2,6 +2,7 @@ import time
 from typing import List, Tuple
 
 from mpi_master_slave import WorkQueue, Master, Slave
+from mpi_master_slave.exceptions import JobFailedException
 from stringmethod import mpi, mdtools, logger
 
 _instance = None
@@ -58,10 +59,7 @@ class GmxMaster(object):
                 if done:
                     logger.debug('Master: slave finished its task with message "%s"', message)
                 else:
-                    logger.error("Job failed with message '%s'. Stopping all workers", message)
-                    self.terminate_slaves()
-                    return
-
+                    raise JobFailedException("Slave failed job with message '%s'." % message)
             time.sleep(0.03)
 
 
@@ -80,8 +78,7 @@ class GmxSlave(Slave):
             if done:
                 logger.debug('Finished task with message "%s"', message)
             else:
-                logger.error("Job failed with message '%s'. Interrupting", message)
-                break
+                raise JobFailedException("Slave failed job with message '%s'." % message)
 
     def do_work(self, task: Tuple[str, dict]):
         try:
@@ -99,7 +96,7 @@ class GmxSlave(Slave):
             return False, str(ex)
 
 
-def run(tasks: List[Tuple[str, dict]], step=None):
+def submit(tasks: List[Tuple[str, dict]], step=None):
     global _instance
     if mpi.n_ranks == 1:
         # We're running this on a single MPI rank. No need for a master-slave setup
@@ -107,13 +104,15 @@ def run(tasks: List[Tuple[str, dict]], step=None):
         _instance = GmxSlave()
         _instance.run_all(tasks)
         logger.info("Finished with step %s on a single MPI rank", step)
-    elif mpi.is_root():
+    elif mpi.is_master():
         logger.info("Distributing all jobs to %s ranks", mpi.n_ranks)
         # TODO should start a slave on this rank as well to best utilize computational resources
         _instance = GmxMaster(slaves=range(1, mpi.n_ranks))
-        _instance.run(tasks)
-        _instance.terminate_slaves()
-        logger.info("Stopping all workers for step %s", step)
+        try:
+            _instance.run(tasks)
+        finally:
+            logger.info("Stopping all workers for step %s", step)
+            _instance.terminate_slaves()
     else:
         _instance = GmxSlave()
         _instance.run()

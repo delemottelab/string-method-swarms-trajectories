@@ -7,14 +7,15 @@ from stringmethod import logger
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 n_ranks = comm.Get_size()
+_master_rank = 0
 
 
-def is_root():
-    return rank == 0
+def is_master():
+    return rank == _master_rank
 
 
 def run_on_root_then_broadcast(func: Callable, step: str):
-    if is_root():
+    if is_master():
         data = dict(message=None)
         try:
             success = func()
@@ -24,15 +25,15 @@ def run_on_root_then_broadcast(func: Callable, step: str):
             data['message'] = str(ex)
         data[step] = success
     else:
-        # Wait for root to do postprocessing
+        # Wait for root to do work
         data = None
-    data = comm.bcast(data, root=0)
+    data = comm.bcast(data, root=_master_rank)
     if not data.get(step, False):
-        logger.error("Root failed for step %s", step)
+        raise Exception("Master failed for step %s" % step)
 
 
 def init():
-    if is_root():
+    if is_master():
         logger.info("Using %s MPI ranks ", n_ranks)
 
 

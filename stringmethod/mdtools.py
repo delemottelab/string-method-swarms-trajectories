@@ -1,8 +1,8 @@
 import os
 import shutil
-from typing import Optional
 
 import gmxapi as gmx
+import numpy as np
 
 from . import logger
 
@@ -57,3 +57,41 @@ def mdrun(output_dir: str, tpr_file: str):
     # _move_all_files(path, output_dir)
     # os.removedirs(path)
     return md
+
+
+def load_xvg(file_name: str, usemask: bool = False) -> np.array:
+    """
+    Originally from https://github.com/vivecalindahl/awh-use-case/blob/master/scripts/analysis/read_write.py
+    if file does not exist, exit
+    if exists, check number of commentlines to skip
+    extract data and return
+    :param file_name:
+    :param usemask:
+    :return:
+    """
+
+    if not os.path.exists(file_name):
+        raise FileNotFoundError("WARNING: file " + file_name + " not found.")
+
+    # Since xvg files can have both @ and # as a head we check
+    # the size of the header here.
+    # genfromtxt ignores lines starting with #.
+    # Also extract comments starting with # here.
+    nskip = 0
+    comments = []
+    founddata = False
+    with open(file_name) as f:
+        for line in f:
+
+            if line.startswith("#"):
+                comments.append(line.rstrip('\n').lstrip('#').rstrip().lstrip())
+
+            if line.startswith(("@", "#")):
+                if not founddata:
+                    nskip += 1
+            else:
+                founddata = True
+    data = np.genfromtxt(file_name, skip_header=nskip, invalid_raise=True, usemask=usemask)
+    if len(data) == 0:
+        raise IOError("No data found in file " + file_name)
+    return np.array(data)

@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any
 
 import numpy as np
 
-from stringmethod import logger, mdtools, gmx_jobs
+from stringmethod import logger, gmx_jobs, mdtools, utils
 from stringmethod.config import Config
 from . import mpi
 
@@ -26,6 +26,7 @@ class StringIterationRunner(object):
             self._run_restrained()
             self._run_swarms()
             mpi.run_on_root_then_broadcast(lambda: self._compute_new_string()(), 'postprocessing')
+            self.iteration += 1
 
     def _init(self):
         input_string_path = self._get_string_filepath(self.iteration - 1)
@@ -49,7 +50,7 @@ class StringIterationRunner(object):
 
     def _run_restrained(self):
         grompp_tasks, mdrun_tasks = [], []
-        if mpi.is_root():
+        if mpi.is_master():
             for point_idx, point in enumerate(self.string):
                 if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                     continue
@@ -63,34 +64,110 @@ class StringIterationRunner(object):
                     point_idx
                 ))
                 tpr_file = abspath("{}/topol.tpr".format(output_dir))
-                grompp_args = dict(
-                    mdp_file=mdp_file,
-                    index_file="{}/index.ndx".format(self.config.topology_dir),
-                    topology_file="{}/topol.top".format(self.config.topology_dir),
-                    structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
-                        self.config.md_dir,
-                        self.iteration - 1,
-                        point_idx
-                    )),
-                    tpr_file=tpr_file,
-                    mdp_output_file="{}/mdout.mdp".format(output_dir)
-                )
-                mdrun_args = dict(
-                    output_dir=output_dir,
-                    tpr_file=tpr_file,
-                )
-                grompp_tasks.append(('grompp', grompp_args))
-                mdrun_tasks.append(('mdrun', mdrun_args))
-        gmx_jobs.run(tasks=grompp_tasks, step="restrained_grompp")
-        gmx_jobs.run(tasks=mdrun_tasks, step="restrained_mdrun")
+                if os.path.isfile(tpr_file):
+                    logger.debug("File %s already exists. Not running grompp again", tpr_file)
+                else:
+                    grompp_args = dict(
+                        mdp_file=mdp_file,
+                        index_file="{}/index.ndx".format(self.config.topology_dir),
+                        topology_file="{}/topol.top".format(self.config.topology_dir),
+                        structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
+                            self.config.md_dir,
+                            self.iteration - 1,
+                            point_idx
+                        )),
+                        tpr_file=tpr_file,
+                        mdp_output_file="{}/mdout.mdp".format(output_dir)
+                    )
+                    grompp_tasks.append(('grompp', grompp_args))
+                mdrun_confout = "{}/confout.gro".format(output_dir)
+                if os.path.isfile(mdrun_confout):
+                    logger.debug("File %s already exists. Not running mdrun again", mdrun_confout)
+                else:
+                    mdrun_args = dict(
+                        output_dir=output_dir,
+                        tpr_file=tpr_file,
+                    )
+                    mdrun_tasks.append(('mdrun', mdrun_args))
+        gmx_jobs.submit(tasks=grompp_tasks, step="restrained_grompp")
+        gmx_jobs.submit(tasks=mdrun_tasks, step="restrained_mdrun")
 
     def _run_swarms(self):
-        prep = mdtools.grompp()
-        mdtools.mdrun(prep)
-        raise NotImplementedError("TODO similar logic as run_restrained. Remove any restraints")
+        grompp_tasks, mdrun_tasks = [], []
+        if mpi.is_master():
+            for point_idx, point in enumerate(self.string):
+                if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                    continue
+                for swarm_idx in range(self.config.swarm_size):
+                    mdp_file = abspath("{}/swarms.mdp".format(self.config.mdp_dir))
+                    output_dir = abspath("{}/{}/{}/s{}/".format(
+                        self.config.md_dir,
+                        self.iteration,
+                        point_idx,
+                        swarm_idx
+                    ))
+                    tpr_file = abspath("{}/topol.tpr".format(output_dir))
+                    if os.path.isfile(tpr_file):
+                        logger.debug("File %s already exists. Not running grompp again", tpr_file)
+                    else:
+                        grompp_args = dict(
+                            mdp_file=mdp_file,
+                            index_file="{}/index.ndx".format(self.config.topology_dir),
+                            topology_file="{}/topol.top".format(self.config.topology_dir),
+                            structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
+                                self.config.md_dir,
+                                self.iteration,
+                                point_idx
+                            )),
+                            tpr_file=tpr_file,
+                            mdp_output_file="{}/mdout.mdp".format(output_dir)
+                        )
+                        grompp_tasks.append(('grompp', grompp_args))
+                    mdrun_confout = "{}/confout.gro".format(output_dir)
+                    if os.path.isfile(mdrun_confout):
+                        logger.debug("File %s already exists. Not running mdrun again", mdrun_confout)
+                    else:
+                        mdrun_args = dict(
+                            output_dir=output_dir,
+                            tpr_file=tpr_file,
+                        )
+                        mdrun_tasks.append(('mdrun', mdrun_args))
+        gmx_jobs.submit(tasks=grompp_tasks, step="swarms_grompp")
+        gmx_jobs.submit(tasks=mdrun_tasks, step="swarms_mdrun")
 
     def _compute_new_string(self) -> bool:
-        raise NotImplementedError()
+        drifted_string = self.string.copy()
+        for point_idx, point in enumerate(self.string):
+            if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                continue
+            swarm_drift = np.empty((self.config.swarm_size, self.config.n_cvs))
+            for swarm_idx in range(self.config.swarm_size):
+                output_dir = abspath("{}/{}/{}/s{}/".format(
+                    self.config.md_dir,
+                    self.iteration,
+                    point_idx,
+                    swarm_idx
+                ))
+                pull_xvg_out = "{}/pullx.xvg".format(output_dir)
+                data = mdtools.load_xvg(file_name=pull_xvg_out)
+                data = data[:, 1:]  # Skip first column which contains the time
+                if swarm_idx == 0:
+                    # Set the actual start coordinates here, in case they differ from the reference values
+                    # Can happen due to e.g. a too weak potential
+                    drifted_string[point_idx] = data[0]
+                swarm_drift[swarm_idx] = data[-1]
+            drift = swarm_drift.mean(axis=0)
+            drifted_string[point_idx] += drift
+        # scale CVs
+        # This is required to emphasize both small scale and large scale displacements
+        offset = drifted_string.min(axis=0)
+        scale = drifted_string.max(axis=0) - offset
+        scaled_string = (drifted_string - offset) / scale
+        # TODO better scaling, let user control it via config
+        new_scaled_string = utils.reparametrize_path_iter(scaled_string,
+                                                          arclength_weight=None)  # TODO compute arc weights
+        new_string = new_scaled_string * scale + offset
+        np.save(self._get_string_filepath(self.iteration), new_string)
 
     def _get_string_filepath(self, iteration: int) -> str:
         return "{}/string{}.txt".format(self.config.string_dir, iteration)
