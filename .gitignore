@@ -133,5 +133,5 @@ dmypy.json
 .idea/*
 
 # Ignore generated example simulation data
-examples/*/strings/string^[1-9]\d*$.txt
-examples/*/md/^[1-9]\d*$.txt
+examples/*/strings/string[1-9]*.txt
+examples/*/md/[1-9]*
