@@ -135,3 +135,7 @@ dmypy.json
 # Ignore generated example simulation data
 examples/*/strings/string[1-9]*.txt
 examples/*/md/[1-9]*
+examples/*/postprocessing/*.npy
+examples/*/postprocessing/*.png
+examples/*/postprocessing/postprocessing
+examples/*/strings/*.png

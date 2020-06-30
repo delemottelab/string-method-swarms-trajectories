@@ -21,6 +21,8 @@ class Config(object):
     mdp_dir: Optional[str] = "mdp"
     """Input location for the topology. Should contain index.ndx and topol.top"""
     topology_dir: Optional[str] = "topology"
+    """Directory to save swarm transitions"""
+    postprocessing_dir: Optional[str] = "postprocessing"
     """Number of trajectories in a swarm."""
     swarm_size: Optional[int] = 32
     """Maximum number of string iterations"""

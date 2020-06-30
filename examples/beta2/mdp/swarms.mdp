@@ -23,7 +23,7 @@ rvdw                    = 1.2
 tcoupl                  = Nose-Hoover
 tc_grps                 = PROT   MEMB   SOL_ION
 tau_t                   = 1.0    1.0    1.0
-ref_t                   = 303.15 303.15 303.15
+ref_t                   = 300.15 300.15 300.15
 ;
 pcoupl                  = Parrinello-Rahman
 pcoupltype              = semiisotropic

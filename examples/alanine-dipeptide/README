@@ -1,3 +1,11 @@
 String method for alanine dipeptide with it's phi-psi angles
 
-In strings you find a script for visualization and postprocessing.
+# Running the example
+There is bash script, **run.sh**, for running it on a single machine, and a script **submit_beskow.sh** for running it in a slurm environment with MPI.
+
+# Postprocessing
+In **strings** you find a script for visualization and postprocessing.
+
+In free_energy you find a script for computing the free energy from the transitions and visualizing them.
+
+Note that these scripts require you to have matplotlib installed

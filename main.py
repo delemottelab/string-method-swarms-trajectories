@@ -25,8 +25,7 @@ def run(conf: config.Config, start_mode, iteration) -> None:
         r.run()
         return run(conf, start_mode='string', iteration=0)
     elif start_mode == 'postprocessing':
-        # TODO perform postprocessing by loading xvg files and output numpy files
-        raise NotImplementedError("Start mode {} not supported".format(start_mode))
+        postprocessing.run(conf)
     else:
         raise ValueError("Unknown start mode {}".format(start_mode))
 

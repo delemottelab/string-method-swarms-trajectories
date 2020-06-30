@@ -21,4 +21,4 @@ logger: Logger = logging.getLogger("stringmethod-{}".format(MPI.COMM_WORLD.Get_r
 gmxapi.logger.setLevel(logging.WARNING)
 VERSION = "1.0.0"
 
-__all__ = ['config', 'steeredmd', 'stringmd', 'mdtools', 'logger', 'VERSION']
+__all__ = ['config', 'steeredmd', 'stringmd', 'mdtools', 'logger', 'VERSION', 'postprocessing']
