@@ -44,7 +44,7 @@ DispCorr                = EnerPres  ; account for cut-off vdW scheme
 ; Velocity generation
 gen_vel                 = no        ; Velocity generation is off 
 
-; Pull code
+; Pull code for output. no restraints (k=0)
 pull                   = yes      
 pull-ngroups           = 5                  
 pull-group1-name  	   = C0

@@ -1,0 +1,7 @@
+{
+  "simu_id": "beta2",
+  "version": "1.0.0",
+  "swarm_size": 32,
+  "log_level": "DEBUG",
+  "fixed_endpoints": true
+}

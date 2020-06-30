@@ -136,10 +136,11 @@ class StringIterationRunner(object):
 
     def _compute_new_string(self) -> bool:
         drifted_string = self.string.copy()
+        n_cvs = self.string.shape[1]
         for point_idx, point in enumerate(self.string):
             if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                 continue
-            swarm_drift = np.empty((self.config.swarm_size, self.config.n_cvs))
+            swarm_drift = np.empty((self.config.swarm_size, n_cvs))
             for swarm_idx in range(self.config.swarm_size):
                 output_dir = abspath("{}/{}/{}/s{}/".format(
                     self.config.md_dir,
@@ -149,7 +150,9 @@ class StringIterationRunner(object):
                 ))
                 pull_xvg_out = "{}/pullx.xvg".format(output_dir)
                 data = mdtools.load_xvg(file_name=pull_xvg_out)
-                data = data[:, 1:]  # Skip first column which contains the time
+                # Skip first column which contains the time and exclude any columns which come after the CVs
+                # This could be e.g. other restraints not part of the CV set
+                data = data[:, 1:(n_cvs + 1)]
                 if swarm_idx == 0:
                     # Set the actual start coordinates here, in case they differ from the reference values
                     # Can happen due to e.g. a too weak potential

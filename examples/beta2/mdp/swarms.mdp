@@ -1,0 +1,92 @@
+;Originally from charmm-gui generated file step7_production.mdp
+integrator              = md
+dt                      = 0.002
+nsteps                  = 5000
+nstxtcout               = 5000
+nstlog                  = 0
+nstxout                 = 0
+nstvout                 = 0
+nstfout                 = 0
+nstcalcenergy           = 100
+nstenergy               = 0
+;
+cutoff-scheme           = Verlet
+nstlist                 = 20
+rlist                   = 1.2
+coulombtype             = pme
+rcoulomb                = 1.2
+vdwtype                 = Cut-off
+vdw-modifier            = Force-switch
+rvdw_switch             = 1.0
+rvdw                    = 1.2
+;
+tcoupl                  = Nose-Hoover
+tc_grps                 = PROT   MEMB   SOL_ION
+tau_t                   = 1.0    1.0    1.0
+ref_t                   = 303.15 303.15 303.15
+;
+pcoupl                  = Parrinello-Rahman
+pcoupltype              = semiisotropic
+tau_p                   = 5.0
+compressibility         = 4.5e-5  4.5e-5
+ref_p                   = 1.0     1.0
+;
+constraints             = h-bonds
+constraint_algorithm    = LINCS
+continuation            = yes
+;
+nstcomm                 = 100
+comm_mode               = linear
+comm_grps               = PROT   MEMB   SOL_ION
+;
+refcoord_scaling        = com
+disre					= no
+;define                  = -DCV_REST_ON
+nstdisreout             = 0
+;
+gen-vel                 = no
+
+; Pull code for output. no restraints (k=0)
+pull                   = yes
+pull-ngroups           = 8
+pull-group1-name  	   = a_863
+pull-group2-name  	   = a_4334
+pull-group3-name  	   = a_1971
+pull-group4-name  	   = a_3340
+pull-group5-name  	   = a_1462
+pull-group6-name  	   = a_3459
+pull-group7-name  	   = a_3203
+pull-group8-name  	   = a_3318
+
+
+pull-ncoords			= 5
+
+;ALA76-CYS327 CA distance
+pull-coord1-geometry	= distance
+pull-coord1-groups	    = 1 2
+pull-coord1-k			= 0
+
+;GLU268-LYS147 CA distance
+pull-coord2-geometry	= distance
+pull-coord2-groups	    = 3 4
+pull-coord2-k			= 0
+
+;CYS327-LYS147 CA distance
+pull-coord3-geometry	= distance
+pull-coord3-groups	    = 3 2
+pull-coord3-k			= 0
+
+;LEU115-LEU275 CA distance
+pull-coord4-geometry	= distance
+pull-coord4-groups	    = 5 6
+pull-coord4-k			= 0
+
+;LYS267-PHE223 CA distance
+pull-coord5-geometry	= distance
+pull-coord5-groups	    = 7 8
+pull-coord5-k			= 0
+
+pull-print-components	= no ; output pull coordinates
+pull-nstxout            = 5000 ; Step interval to output the coordinate values to the pullx.xvg.
+pull-nstfout			= 0
+

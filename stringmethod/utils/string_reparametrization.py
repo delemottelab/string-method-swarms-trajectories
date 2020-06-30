@@ -1,15 +1,6 @@
-import logging
-import sys
-
-logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.DEBUG,
-    format='%(asctime)s %(name)s-%(levelname)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
 import numpy as np
-import matplotlib.pyplot as plt
 
-logger = logging.getLogger("reparam")
+from stringmethod import logger
 
 
 def compute_path_length(path, S=None):
@@ -115,7 +106,7 @@ def reparametrize_path_iter(path,
     return new_path
 
 
-def reparametrize_path_grid(path, resolution=30000, plot=False):
+def reparametrize_path_grid(path, resolution=30000):
     """
     Given initial points on a path, realign the points equidistantly along the same path.
     Originally from https://stackoverflow.com/questions/19117660/how-to-generate-equispaced-interpolating-values
@@ -159,25 +150,6 @@ def reparametrize_path_grid(path, resolution=30000, plot=False):
         raise Exception(
             "Number of path points differ after reparametrization, something must have gone wrong. Previous: "
             + str(len(path)) + ", new: " + str(len(new_path)))
-    if plot and dim > 1:
-        for i in range(dim):
-            for j in range(i + 1, dim):
-                fig, ax = plt.subplots()
-                # ax.plot(grid[0, :], grid[1, :], '-', label="Grid")
-                ax.plot(path[:, i], path[:, j], alpha=0.3, label="Old")
-                ax.scatter(path[:, i], path[:, j], alpha=0.3)
-                ax.plot(
-                    new_path[:, i],
-                    new_path[:, j],
-                    "--",
-                    alpha=0.3,
-                    label="New")
-                ax.scatter(new_path[:, i], new_path[:, j], alpha=0.3)
-                ax.set_aspect('equal')
-                plt.xlabel(str(i))
-                plt.ylabel(str(j))
-                ax.legend()
-        plt.show()
     return new_path
 
 
