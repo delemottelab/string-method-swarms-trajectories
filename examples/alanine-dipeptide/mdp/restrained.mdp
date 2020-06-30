@@ -58,13 +58,13 @@ pull-ncoords			= 2
 ;phi
 pull-coord1-geometry	= dihedral
 pull-coord1-groups	    = 1 2 2 3 3 4
-pull-coord1-k			= 10000
+pull-coord1-k			= 1000
 ;pull-coord1-init	   = 0
 
 ;psi
 pull-coord2-geometry	= dihedral
 pull-coord2-groups	    = 2 3 3 4 4 5
-pull-coord2-k			= 10000
+pull-coord2-k			= 1000
 ;pull-coord2-init	   = 0
 
 

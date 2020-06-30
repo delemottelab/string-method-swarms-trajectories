@@ -16,7 +16,7 @@ def show(grid, free_energy, string, fe_cut_off=10):
     free_energy[free_energy > fe_cut_off] = np.nan
     im = plt.contourf(phi,
                       psi,
-                      free_energy.T, #TODO should we take the transform of the matrix or not?
+                      free_energy.T,  # TODO should we take the transform of the matrix or not?
                       levels=20,
                       cmap=plt.cm.rainbow)
     cbar = plt.colorbar(im)
