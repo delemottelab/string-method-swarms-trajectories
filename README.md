@@ -138,7 +138,7 @@ Here we've also provided an optional config file
 Assume that you want to run in parallel with 4 MPI rank and that you have 128 CPUs at your disposal. 
 To achieve good performance we need to tell GROMACS to use ```128/4=32``` threads per rank and tell our MPI provider to start ```4+1=5``` MPI processes. 
 The reason is that one process acts
-as master and delegates simulation jobs to the other nodes. Note that this might change in future versions.
+as master and delegates simulation jobs to the other nodes. 
 
 ```bash 
 export OMP_NUM_THREADS=32
@@ -150,8 +150,8 @@ In the **examples** directory you'll find complete sets of input files for runni
 These can be used for testing your python environment or as a template to set up your own simulation.
 
 ## Alanine dipeptide in vaccuum
-We analyse the transition between two metastable states of alanine dipeptide using the two dihedral angles ϕ and Ψ. 
-This simulation can run a regular laptop.
+We analyze the transition between two metastable states of alanine dipeptide using the two dihedral angles ϕ and Ψ. 
+This simulation can run on a regular laptop.
 
 ## beta2: G protein-coupled receptor (GPCR) activation
 We study the beta2 adrenergic receptor in its native apo state using five C-alpha distances as CVs. 

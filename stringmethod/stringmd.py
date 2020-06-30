@@ -8,6 +8,7 @@ import numpy as np
 
 from stringmethod import logger, gmx_jobs, mdtools, utils
 from stringmethod.config import Config
+from stringmethod.utils.scaling import MinMaxScaler
 from . import mpi
 
 
@@ -162,14 +163,21 @@ class StringIterationRunner(object):
             drifted_string[point_idx] += drift
         # scale CVs
         # This is required to emphasize both small scale and large scale displacements
-        offset = drifted_string.min(axis=0)
-        scale = drifted_string.max(axis=0) - offset
-        scaled_string = (drifted_string - offset) / scale
+        scaler = MinMaxScaler()
+        scaled_string = scaler.fit_transform(drifted_string)
         # TODO better scaling, let user control it via config
         new_scaled_string = utils.reparametrize_path_iter(scaled_string,
                                                           arclength_weight=None)  # TODO compute arc weights
-        new_string = new_scaled_string * scale + offset
+        new_string = scaler.inverse_transform(new_scaled_string)
         np.savetxt(self._get_string_filepath(self.iteration), new_string)
+
+        # Compute convergence
+        # Note that this convergence does not take periodic boundary conditions into account.
+        # To handle that you need to compute your own metric. See the alanine dipeptide example
+        scaled_current_string = scaler.transform(self.string)
+        mean_norm = (np.linalg.norm(new_scaled_string) + np.linalg.norm(scaled_current_string)) / 2
+        convergence = np.linalg.norm(new_scaled_string - scaled_current_string) / mean_norm
+        logger.info("Convergence between iteration %s and %s: %s", self.iteration - 1, self.iteration, convergence)
         return True
 
     def _get_string_filepath(self, iteration: int) -> str:
