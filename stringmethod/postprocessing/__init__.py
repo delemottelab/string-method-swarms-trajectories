@@ -11,7 +11,7 @@ def run(config: Config):
     tc = TransitionCountCalculator(config=config, cv_coordinates=ce.cv_coordinates)
     tc.run()
     tc.persist()
-    fc = FreeEnergyCalculator(config=config, transition_count=tc.transition_count)
+    fc = FreeEnergyCalculator(config=config, transition_count=tc.transition_count, grid=tc.grid)
     fc.run()
     fc.persist()
 

@@ -12,7 +12,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def run(conf: config.Config, start_mode, iteration) -> None:
+def run(conf: config.Config, start_mode, iteration=1) -> None:
     logger.debug("Using config %s", conf)
     if start_mode == 'string':
         r = stringmd.StringIterationRunner(config=conf,
@@ -23,7 +23,7 @@ def run(conf: config.Config, start_mode, iteration) -> None:
     elif start_mode == 'steered':
         r = steeredmd.SteeredRunner(conf)
         r.run()
-        return run(conf, start_mode='string', iteration=0)
+        return run(conf, start_mode='string')
     elif start_mode == 'postprocessing':
         postprocessing.run(conf)
     else:

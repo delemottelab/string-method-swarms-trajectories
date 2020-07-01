@@ -6,6 +6,7 @@ import numpy as np
 
 from stringmethod import logger
 from .base import AbstractPostprocessor
+from .index_conversion import IndexConverter
 
 
 @dataclass
@@ -15,6 +16,8 @@ class FreeEnergyCalculator(AbstractPostprocessor):
     """
     """Input from previous step"""
     transition_count: np.array
+    """Input from previous step"""
+    grid: np.array
     """detailed_balance regularizes the transition matrix while computing the stationary distribution"""
     method: Optional[str] = "detailed_balance"
     """
@@ -27,9 +30,12 @@ class FreeEnergyCalculator(AbstractPostprocessor):
     T: Optional[float] = 300.
     probability_distribution: Optional[np.array] = None
     free_energy: Optional[np.array] = None
+    _index_converter: Optional[IndexConverter] = None
 
     def __post_init__(self):
-        pass
+        if len(self.grid.shape) == 1:
+            self.grid = self.grid[:, np.newaxis]
+        self._index_converter = IndexConverter(n_dim=self.grid.shape[1], n_grid_points=self.grid.shape[0])
 
     def _do_run(self) -> bool:
         self.probability_distribution = self.compute_probability_distribution()
@@ -55,7 +61,8 @@ class FreeEnergyCalculator(AbstractPostprocessor):
             else:
                 fe[bin_idx] = -self.kB * self.T * np.log(p)
         fe -= fe.min()
-        return fe
+        fe = self._index_converter.convert_to_grid(fe)
+        return fe[:, np.newaxis] if len(fe.shape) == 1 else fe
 
     def _compute_probability_distribution_eigenvector(self):
         """
@@ -154,9 +161,7 @@ class FreeEnergyCalculator(AbstractPostprocessor):
         if len(rho[rho == 0]) < inaccessible_states:
             raise Exception("Something went wrong. Number inaccessible states differ %s vs. %s" % (len(rho[rho == 0]),
                                                                                                    inaccessible_states))
-        result = np.zeros((1, nbins,))
-        result[0] = rho  # minor fix to return correct format. TODO use np function to extend dimensions if necessary
-        return result
+        return rho
 
     def _remove_transitions_to_isolated_bins(self, transition_count):
         """Remove all transitions which moves from a bin with no starting points"""
