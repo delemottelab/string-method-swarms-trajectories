@@ -4,8 +4,8 @@ String method for alanine dipeptide with it's phi-psi angles
 There is bash script, **run.sh**, for running it on a single machine, and a script **submit_beskow.sh** for running it in a slurm environment with MPI.
 
 # Postprocessing
-In **strings** you find a script for visualization and postprocessing.
+You find two python scripts for visualization and postprocessing: one for visualizing the strings and convergence,
+and one for computing the free energy from the transitions.
+The latter also provides a tool which handles the periodicity issue with dihedral angles by converting the dihadral angles to principal components with dihedral-PCA.
 
-In free_energy you find a script for computing the free energy from the transitions and visualizing them.
-
-Note that these scripts require you to have matplotlib installed
+Note that these scripts require you to have matplotlib and scikit-learn installed.
