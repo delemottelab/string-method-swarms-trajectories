@@ -51,18 +51,20 @@ class FreeEnergyCalculator(AbstractPostprocessor):
             prob = self._compute_probability_distribution_detailed_balance()
         else:
             prob = self._compute_probability_distribution_eigenvector()
-        return prob.squeeze()
+        prob = prob.squeeze()
+        prob = self._index_converter.convert_to_grid(prob)
+        return prob[:, np.newaxis] if len(prob.shape) == 1 else prob
 
     def compute_free_energy(self):
         fe = np.empty(self.probability_distribution.shape)
-        for bin_idx, p in enumerate(self.probability_distribution):
-            if p is None or np.isnan(p) or p <= 1e-7:
-                fe[bin_idx] = sys.float_info.max  # np.nan
-            else:
-                fe[bin_idx] = -self.kB * self.T * np.log(p)
+        for row_idx, p_row in enumerate(self.probability_distribution):
+            for col_idx, p in enumerate(p_row):
+                if p is None or np.isnan(p) or p <= 1e-7:
+                    fe[row_idx, col_idx] = sys.float_info.max  # np.nan
+                else:
+                    fe[row_idx, col_idx] = -self.kB * self.T * np.log(p)
         fe -= fe.min()
-        fe = self._index_converter.convert_to_grid(fe)
-        return fe[:, np.newaxis] if len(fe.shape) == 1 else fe
+        return fe
 
     def _compute_probability_distribution_eigenvector(self):
         """
