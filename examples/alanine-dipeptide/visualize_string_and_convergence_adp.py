@@ -17,10 +17,7 @@ def show(max_iter=int(1e10), stride=50):
             break
         s = np.loadtxt(file)
         # Taking the modulus of 2pi fixes PBC's somewhat
-        s = s % (2 * np.pi)
-        # Plotting the sine of the angles to avoid issues with periodic boundary conditions
-        # Note that simply taking the sine value reduces dimensionality. Use with care
-        s = np.sin(s)
+        s = s % 360
         plt.plot(s[:, 0], s[:, 1], '-o', label=str(it), alpha=0.75)
         if last is not None:
             mean_norm = (np.linalg.norm(s) + np.linalg.norm(last)) / 2
@@ -28,8 +25,8 @@ def show(max_iter=int(1e10), stride=50):
             convergence.append(c)
             iterations.append(it)
         last = s
-    plt.xlabel("$\sin(\phi)$")
-    plt.ylabel("$\sin(\psi)$")
+    plt.xlabel("$\phi [degrees]$")
+    plt.ylabel("$\psi [degrees]$")
     plt.legend()
     plt.tight_layout()
     plt.savefig("strings.png")

@@ -6,10 +6,12 @@ import numpy as np
 sys.path.append("../../../")
 from stringmethod.config import *
 from stringmethod.postprocessing import *
-from matplotlib import ticker, colors
+from matplotlib import colors
 
 
-def show(grid: np.array, free_energy: np.array, string: np.array = None, fe_cut_off: float = 10):
+def show(grid: np.array,
+         free_energy: np.array,
+         fe_cut_off: float = 10):
     free_energy[free_energy > fe_cut_off] = np.nan
     phi = grid[:, 0]
     if free_energy.shape[1] == 1:
@@ -25,25 +27,23 @@ def show(grid: np.array, free_energy: np.array, string: np.array = None, fe_cut_
                           cmap=plt.cm.rainbow)
         cbar = plt.colorbar(im)
         cbar.set_label("[kcal/mol]")
-        if string is not None:
-            plt.plot(string[:, 0], string[:, 1], '--o', label="String")
-            plt.legend()
+        plt.ylabel("[rad]")
+    plt.xlabel("[rad]")
     plt.tight_layout()
     plt.savefig("free_energy.png")
     plt.show()
 
 
-def handle_periodicity(cv_coordinates: np.array, dpca: bool = True):
+def handle_periodicity(cv_coordinates: np.array, dpca: bool = False) -> np.array:
     """
     # Handle periodic boundary conditions by taking modules 2pi or performing dihedral-PCA
     :param dpca: if True, perform dPCA onto the input and convert it into two components
     :param cv_coordinates:
     :return:
     """
-
-    offset = -np.pi / 4  # you may play around with an offset to make the plot more continuous
-    cv_coordinates = offset + cv_coordinates % (2 * np.pi)
-
+    # you may play around with an offset to make the plot more continuous
+    offset = 0  # -np.pi / 4
+    cv_coordinates = (offset + cv_coordinates) % (2 * np.pi)
     if dpca:
         from sklearn.decomposition import PCA
         new_coords = np.empty((len(cv_coordinates), cv_coordinates.shape[1], 4))
@@ -62,11 +62,16 @@ def handle_periodicity(cv_coordinates: np.array, dpca: bool = True):
 def compute():
     config = load_config("config.json")
     cv_coordinates = np.load("postprocessing/cv_coordinates.npy")
+    # Convert from degrees to radians
+    cv_coordinates = cv_coordinates * np.pi / 180
+
     cv_coordinates = handle_periodicity(cv_coordinates)
 
     # Uncomment to only select one CV
     # cv_coordinates = cv_coordinates[:, :, 0]
     tc = TransitionCountCalculator(config=config,
+                                   # You want to play around with n_grid_points.
+                                   # It sets the resolution. Its optimal value depends on your swarm trajectory length
                                    n_grid_points=13,
                                    cv_coordinates=cv_coordinates)
     tc.run()
