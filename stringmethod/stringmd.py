@@ -159,7 +159,7 @@ class StringIterationRunner(object):
                         # Set the actual start coordinates here, in case they differ from the reference values
                         # Can happen due to e.g. a too weak potential
                         drifted_string[point_idx] = data[0]
-                    swarm_drift[swarm_idx] = data[-1]
+                    swarm_drift[swarm_idx] = data[-1] - drifted_string[point_idx]
                 drift = swarm_drift.mean(axis=0)
                 drifted_string[point_idx] += drift
         # scale CVs

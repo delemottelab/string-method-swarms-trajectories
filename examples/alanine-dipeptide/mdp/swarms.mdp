@@ -54,11 +54,11 @@ pull-group4-name  	   = C
 pull-group5-name  	   = N2
 
 pull-ncoords			= 2
-pull-coord1-geometry	= angle
-pull-coord1-groups	    = 1 2 3 4
+pull-coord1-geometry	= dihedral
+pull-coord1-groups	    = 1 2 2 3 3 4
 pull-coord1-k			= 0
-pull-coord2-geometry	= angle
-pull-coord2-groups	    = 2 3 4 5
+pull-coord2-geometry	= dihedral
+pull-coord2-groups	    = 2 3 3 4 4 5
 pull-coord2-k			= 0
 
 
