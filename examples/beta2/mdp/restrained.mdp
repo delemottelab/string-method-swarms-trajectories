@@ -40,12 +40,6 @@ nstcomm                 = 100
 comm_mode               = linear
 comm_grps               = PROT   MEMB   SOL_ION
 ;
-refcoord_scaling        = com
-disre					= no
-disre-fc                = 100000
-disre-tau               = 0
-;define                  = -DCV_REST_ON
-;
 gen-vel                 = no
 
 ; Pull code

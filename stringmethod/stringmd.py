@@ -138,36 +138,38 @@ class StringIterationRunner(object):
     def _compute_new_string(self) -> bool:
         drifted_string = self.string.copy()
         n_cvs = self.string.shape[1]
-        for point_idx, point in enumerate(self.string):
-            if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
-                continue
-            swarm_drift = np.empty((self.config.swarm_size, n_cvs))
-            for swarm_idx in range(self.config.swarm_size):
-                output_dir = abspath("{}/{}/{}/s{}/".format(
-                    self.config.md_dir,
-                    self.iteration,
-                    point_idx,
-                    swarm_idx
-                ))
-                pull_xvg_out = "{}/pullx.xvg".format(output_dir)
-                data = mdtools.load_xvg(file_name=pull_xvg_out)
-                # Skip first column which contains the time and exclude any columns which come after the CVs
-                # This could be e.g. other restraints not part of the CV set
-                data = data[:, 1:(n_cvs + 1)]
-                if swarm_idx == 0:
-                    # Set the actual start coordinates here, in case they differ from the reference values
-                    # Can happen due to e.g. a too weak potential
-                    drifted_string[point_idx] = data[0]
-                swarm_drift[swarm_idx] = data[-1]
-            drift = swarm_drift.mean(axis=0)
-            drifted_string[point_idx] += drift
+        if self.config.swarm_size > 0:
+            for point_idx, point in enumerate(self.string):
+                if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                    continue
+                swarm_drift = np.empty((self.config.swarm_size, n_cvs))
+                for swarm_idx in range(self.config.swarm_size):
+                    output_dir = abspath("{}/{}/{}/s{}/".format(
+                        self.config.md_dir,
+                        self.iteration,
+                        point_idx,
+                        swarm_idx
+                    ))
+                    pull_xvg_out = "{}/pullx.xvg".format(output_dir)
+                    data = mdtools.load_xvg(file_name=pull_xvg_out)
+                    # Skip first column which contains the time and exclude any columns which come after the CVs
+                    # This could be e.g. other restraints not part of the CV set
+                    data = data[:, 1:(n_cvs + 1)]
+                    if swarm_idx == 0:
+                        # Set the actual start coordinates here, in case they differ from the reference values
+                        # Can happen due to e.g. a too weak potential
+                        drifted_string[point_idx] = data[0]
+                    swarm_drift[swarm_idx] = data[-1]
+                drift = swarm_drift.mean(axis=0)
+                drifted_string[point_idx] += drift
         # scale CVs
         # This is required to emphasize both small scale and large scale displacements
         scaler = MinMaxScaler()
         scaled_string = scaler.fit_transform(drifted_string)
         # TODO better scaling, let user control it via config
         new_scaled_string = utils.reparametrize_path_iter(scaled_string,
-                                                          arclength_weight=None)  # TODO compute arc weights
+                                                          # TODO compute arc weights based on transition between points
+                                                          arclength_weight=None)
         new_string = scaler.inverse_transform(new_scaled_string)
         np.savetxt(self._get_string_filepath(self.iteration), new_string)
 

@@ -39,11 +39,6 @@ nstcomm                 = 100
 comm_mode               = linear
 comm_grps               = PROT   MEMB   SOL_ION
 ;
-refcoord_scaling        = com
-disre					= no
-;define                  = -DCV_REST_ON
-nstdisreout             = 0
-;
 gen-vel                 = no
 
 ; Pull code for output. no restraints (k=0)

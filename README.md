@@ -119,7 +119,12 @@ We know it requires some effort to get started. We're working on a script which 
 
 ### config.json (optional)
 This JSON file will be loaded as a `` Config`` object defined in **stringmethod/config.py**. 
-You can override parameters such as the number of trajectories in a swarm, the maximum number of iterations and if the endpoints should be fixed.
+You can override parameters such as:
+ * swarm_size=int (default: 32). The number of trajectories in a swarm.  
+ * max_iterations=int (default: 100). The maximum number of iterations before the program automatically goes into processing. 
+ * fixed_endpoints=true/false (default: false). Ff the endpoints should be fixed or not. 
+ Fixed endpoints will not be updated between iterations. 
+ No swarm trajectories will be launched from the endpoints.
 You can also change the location of the input/output directories.
 
 ## Running a string simulation
@@ -132,18 +137,88 @@ The program can run either in an MPI environment, automatically distributing the
 ```bash
 python main.py --config_file=config.json
 ```
-Here we've also provided an optional config file
+This will run all the simulations in sequential order, first all points, then all swarm trajectories per point.
+Here we've also provided an optional config file. 
+
+In practice, unless the machine has hardware acceleration (i.e. a GPU) you probably need to run the string method in a distributed environment.
 
 ### Running with MPI in a HPC environment
-Assume that you want to run in parallel with 4 MPI rank and that you have 128 CPUs at your disposal. 
+The string method is well-suited for distributed computing, 
+where the independent MD simulations run in parallel with very little inter-process communication. 
+The program implements a master-slave architecture for running multi-node simulations.
+One MPI rank, i.e. the master, won't run GROMACS; it will run the main python script and tell all the other MPI ranks what to do. 
+The other MPI ranks, the slaves, will receive instructions on what GROMACS commands to execute from the master. 
+When they are finished they'll notify the master and receive new jobs, if there are any.
+
+
+So if you want to run MD on `N` MPI ranks, then you should start your program with `N+1` MPI processes, 
+so that there's one for the master. The master is very lightweight and doesn't need many resources to work, 
+so optimize your nodes and threads to maximize the throughput of the slaves. 
+If you want to run on `4` nodes you can for example start `4+1=5` MPI processes.
+Thus, every node will run one MD simulation at the time. 
+If you can start e.g. `4*4+1=17` processes, every node will run up to `4` MD simulations in parallel. 
+If you intend to run more than one MD simulation per node you should also set the environment variable `OMP_NUM_THREADS`
+so that the MD simulation don't share processor cores. 
+If your HPC environment has `32` physical cores per node and you want to run  `4` MD simulations per node
+you should set `OMP_NUM_THREADS=32/4=8`. 
+
+
+The swarm size is the number of short trajectories per point/bead. 
+The master-slave architecture will work no matter your swarm size and the number of points on the string. 
+However, since the algorithm needs to finish one step before it moves on to the next, 
+it's a bonus if all the MD simulations finish at roughly the same time, to avoid idle nodes. 
+To do so, the number of points on the string (excluding the fixed endpoints) should be divisible by `N`, the number MPI slave ranks.
+The perfect combination of MPI ranks and OMP threads to maximize throughput will depend on the queue time and how large your system is.
+You can change the settings from one submission to another until you find a good combination.
+
+**Example**
+
+Assume that you want to run in parallel with `4` MPI rank and that you have `128` CPUs at your disposal. 
 To achieve good performance we need to tell GROMACS to use ```128/4=32``` threads per rank and tell our MPI provider to start ```4+1=5``` MPI processes. 
-The reason is that one process acts
-as master and delegates simulation jobs to the other nodes. 
 
 ```bash 
 export OMP_NUM_THREADS=32
 mpiexec -n 5 -m mpi4py main.py 
 ```
+
+### Handling restarts
+You can just start the script the same way as you did the first time, it will figure out where it was before.
+Otionally you can start the python script with a flag --iteration=X, then it will start from that step directly.
+There's no support for starting from checkpoint (.cpt) files yet.
+
+### Recovering after a crash
+Assume that your simulation files are corrupt or that you realize your mdp options are incorrect, and you need to rerun part of the simulation. 
+Since the files are organized in a tree structure, it's easy to delete the directory of a failing iteration or point. 
+Then when you restart that directory will be recreated.
+
+# Convergence of the string and free energy landscapes
+There is a log message written at the end of every iteration about string convergence. 
+The convergence is measured as:
+
+[|\bar{s}_{i}-\bar{s}_{i-1}|/(0.5*(|\bar{s}_{i}|+|\bar{s}_{i-1}|))]::
+
+![equation](
+http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%7B%7C%5Cbar%7Bs%7D_%7Bi%7D-%5Cbar%7Bs%7D_%7Bi-1%7D%7C%7D%7B0.5%28%7C%5Cbar%7Bs%7D_%7Bi%7D%7C%2B%7C%5Cbar%7Bs%7D_%7Bi-1%7D%7C%29%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0
+)
+
+where ![equation](http://www.sciweavers.org/tex2img.php?eq=%5Cbar%7Bs%7D_%7Bi%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+are the string coordinates at the end of iteration `i`, scaled between their max and min values. 
+Since you can expect some fluctuations or the drift to vary in speed depending on your Free Energy (FE) surface, this may not be a perfect metric. 
+You can compute this metric for strings over many iterations apart, which gives you a better view of the long-term convergence. 
+There's an example python script on how to do this in examples/alanine-dipeptide. 
+
+Then there's the convergence of the free energy landscapes, which is not exactly the same thing. 
+For that you have two options: the easy one is to compute the free energy landscape between iterations x and y, 
+then compare it to the landscape between iterations y+1 and z. 
+Another solution is to the take the transition counts you get from this repository, 
+feed it to pyEmma or MSMBuilder and run Markov chain Monte Carlo bootstrapping. 
+The advantage of the latter is that you can get a better view of convergence without having to run that long.
+
+
+You can have a perfectly converged string and not have a converged free energy landscape.
+The reason is that you need multiple transitions between bins to converge the free energy landscape. 
+Convergence of the string just requires the drift of the swarm to be low. 
+If you have high free energy barriers you still need transitions along them to get a FE landscape.
 
 # Examples
 In the **examples** directory you'll find complete sets of input files for running a simulation. 
