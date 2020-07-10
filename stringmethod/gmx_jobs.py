@@ -105,7 +105,7 @@ def submit(tasks: List[Tuple[str, dict]], step=None):
         _instance.run_all(tasks)
         logger.info("Finished with step %s on a single MPI rank", step)
     elif mpi.is_master():
-        logger.info("Distributing all jobs to %s ranks", mpi.n_ranks)
+        logger.info("Distributing all jobs to %s ranks", mpi.n_ranks - 1)
         # TODO should start a slave on this rank as well to best utilize computational resources
         _instance = GmxMaster(slaves=range(1, mpi.n_ranks))
         try:

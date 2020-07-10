@@ -36,13 +36,15 @@ def _move_all_files(src, dest):
         shutil.move(os.path.join(src, f), os.path.join(dest, f))
 
 
-def mdrun(output_dir: str, tpr_file: str):
+def mdrun(output_dir: str, tpr_file: str, check_point_file: str = None):
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
-
+    input_files = {'-s': tpr_file}
+    if check_point_file is not None:
+        input_files['-cpi'] = check_point_file
     md = gmx.commandline_operation(executable="gmx",
                                    arguments=["mdrun"],
-                                   input_files={'-s': tpr_file},
+                                   input_files=input_files,
                                    output_files={})
     md.run()
     output = str(md.output.erroroutput.result()).strip()
