@@ -80,13 +80,19 @@ class StringIterationRunner(object):
                         mdp_output_file="{}/mdout.mdp".format(output_dir)
                     )
                     grompp_tasks.append(('grompp', grompp_args))
+                #SPC Pick up checkpoint files if available
+                check_point_file = abspath("{}/state.cpt".format(output_dir))
+                if not os.path.isfile(check_point_file):
+                    check_point_file=None
                 mdrun_confout = "{}/confout.gro".format(output_dir)
                 if os.path.isfile(mdrun_confout):
                     logger.debug("File %s already exists. Not running mdrun again", mdrun_confout)
                 else:
+                #SPC Pick up checkpoint files if available
                     mdrun_args = dict(
                         output_dir=output_dir,
                         tpr_file=tpr_file,
+                        check_point_file=check_point_file,
                     )
                     mdrun_tasks.append(('mdrun', mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="restrained_grompp")
@@ -123,13 +129,19 @@ class StringIterationRunner(object):
                             mdp_output_file="{}/mdout.mdp".format(output_dir)
                         )
                         grompp_tasks.append(('grompp', grompp_args))
+                    #SPC Pick up checkpoint files if available
+                    check_point_file = abspath("{}/state.cpt".format(output_dir))
+                    if not os.path.isfile(check_point_file):
+                        check_point_file=None
                     mdrun_confout = "{}/confout.gro".format(output_dir)
                     if os.path.isfile(mdrun_confout):
                         logger.debug("File %s already exists. Not running mdrun again", mdrun_confout)
                     else:
+                #SPC Pick up checkpoint files if available
                         mdrun_args = dict(
                             output_dir=output_dir,
                             tpr_file=tpr_file,
+                            check_point_file=check_point_file,
                         )
                         mdrun_tasks.append(('mdrun', mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="swarms_grompp")

@@ -226,7 +226,7 @@ These can be used for testing your python environment or as a template to set up
 
 ## Alanine dipeptide in vaccuum
 We analyze the transition between two metastable states of alanine dipeptide using the two dihedral angles ϕ and Ψ. 
-This simulation can run on a regular laptop.
+This simulation can run on a regular laptop. Using GPU acceleration in this small system may result in slower simulations.
 
 ## beta2: G protein-coupled receptor (GPCR) activation
 We study the beta2 adrenergic receptor in its native apo state using five C-alpha distances as CVs. 

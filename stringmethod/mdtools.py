@@ -42,8 +42,9 @@ def mdrun(output_dir: str, tpr_file: str, check_point_file: str = None):
     input_files = {'-s': tpr_file}
     if check_point_file is not None:
         input_files['-cpi'] = check_point_file
+    #SPC increased state printing to every 5 minutes since swarms are short
     md = gmx.commandline_operation(executable="gmx",
-                                   arguments=["mdrun"],
+                                   arguments=["mdrun",'-cpt', '5'],
                                    input_files=input_files,
                                    output_files={})
     md.run()
