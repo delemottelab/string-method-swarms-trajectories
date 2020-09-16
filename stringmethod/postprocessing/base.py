@@ -7,7 +7,7 @@ from .. import mpi
 
 @dataclass
 class AbstractPostprocessor(object):
-    config: Config
+    postprocessing_dir: str
 
     def run(self):
         mpi.run_on_root_then_broadcast(lambda: self._do_run(), self.__class__.__name__)
@@ -25,4 +25,9 @@ class AbstractPostprocessor(object):
         pass
 
     def _get_out_dir(self) -> str:
-        return "{}".format(self.config.postprocessing_dir)
+        return "{}".format(self.postprocessing_dir)
+
+    @classmethod
+    def from_config(clazz, config: Config, **kwargs):
+        """returns a new instance of the class"""
+        return clazz(postprocessing_dir=config.postprocessing_dir, **kwargs)

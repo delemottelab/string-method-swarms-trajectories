@@ -6,11 +6,13 @@ from typing import Optional
 import numpy as np
 
 from stringmethod import logger, mdtools
+from stringmethod.config import Config
 from .base import AbstractPostprocessor
 
 
 @dataclass
 class CvValueExtractor(AbstractPostprocessor):
+    md_dir: Optional[str] = "md"
     """
     Loads all swarms' start and end CV coordinates and puts them in an array for further postprocessing
     """
@@ -34,7 +36,7 @@ class CvValueExtractor(AbstractPostprocessor):
         cv_coordinates = None
         for it in range(self.first_iteration, self.last_iteration + 1):
             iteration_md_dir = "{}/{}/*/s*/*xvg".format(
-                self.config.md_dir,
+                self.md_dir,
                 it
             )
             xvg_files = glob.glob(iteration_md_dir)

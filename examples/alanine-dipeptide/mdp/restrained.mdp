@@ -1,3 +1,7 @@
+; MDP options for the restrained equilibration at every point of the string.
+; Swarm simulations will be launched from the output coordinates of this simulation.
+; The output pull coordinates will be used to compute the drift along the string.
+
 ; Run parameters
 integrator              = md        ; leap-frog integrator
 nsteps                  = 15000    ;
@@ -59,13 +63,13 @@ pull-ncoords			= 2
 pull-coord1-geometry	= dihedral
 pull-coord1-groups	    = 1 2 2 3 3 4
 pull-coord1-k			= 100
-;pull-coord1-init	   = 0
 
 ;psi
 pull-coord2-geometry	= dihedral
 pull-coord2-groups	    = 2 3 3 4 4 5
 pull-coord2-k			= 100
-;pull-coord2-init	   = 0
+
+; pull-coord1-init and  pull-coord2-init are set by the code during run time
 
 
 pull-print-components			= no ; output pull coordinates

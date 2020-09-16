@@ -1,6 +1,6 @@
 from mpi4py import MPI
 from enum import IntEnum
-from mpi_master_slave import exceptions
+from gmx_jobs.mpi_master_slave import exceptions
 from abc import ABC, abstractmethod
 
 # Define MPI message tags

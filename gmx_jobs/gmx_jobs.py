@@ -1,8 +1,8 @@
 import time
 from typing import List, Tuple
 
-from mpi_master_slave import WorkQueue, Master, Slave
-from mpi_master_slave.exceptions import JobFailedException
+from gmx_jobs.mpi_master_slave import WorkQueue, Master, Slave
+from gmx_jobs.mpi_master_slave.exceptions import JobFailedException
 from stringmethod import mpi, mdtools, logger
 
 _instance = None

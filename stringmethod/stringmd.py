@@ -6,7 +6,8 @@ from typing import Optional, Dict, Any
 
 import numpy as np
 
-from stringmethod import logger, gmx_jobs, mdtools, utils
+from stringmethod import logger, mdtools, utils
+from gmx_jobs import *
 from stringmethod.config import Config
 from stringmethod.utils.scaling import MinMaxScaler
 from . import mpi
@@ -19,10 +20,17 @@ class StringIterationRunner(object):
     iteration: int
     """Coordinates of the current numpy array"""
     string: Optional[np.array] = None
+    max_iterations: Optional[int] = 100
+    swarm_size: Optional[int] = 32
+    fixed_endpoints: Optional[bool] = True
+    string_dir: Optional[str] = "strings"
+    md_dir: Optional[str] = "md"
+    topology_dir: Optional[str] = "topology"
+    mdp_dir: Optional[str] = "mdp"
 
     def run(self):
 
-        while self.iteration <= self.config.max_iterations:
+        while self.iteration <= self.max_iterations:
             self._init()
             self._run_restrained()
             self._run_swarms()
@@ -38,13 +46,13 @@ class StringIterationRunner(object):
 
     def _setup_dirs(self) -> bool:
         logger.info("creating directories for string iteration %s ", self.iteration)
-        os.makedirs("{}".format(self.config.string_dir), exist_ok=True)
+        os.makedirs("{}".format(self.string_dir), exist_ok=True)
         for point_idx in range(self.string.shape[0]):
-            if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+            if self.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                 continue
-            point_path = "{}/{}/{}/".format(self.config.md_dir, self.iteration, point_idx)
+            point_path = "{}/{}/{}/".format(self.md_dir, self.iteration, point_idx)
             os.makedirs(point_path + "restrained", exist_ok=True)
-            for s in range(self.config.swarm_size):
+            for s in range(self.swarm_size):
                 os.makedirs("{}s{}".format(point_path, s), exist_ok=True)
         return True
 
@@ -52,14 +60,14 @@ class StringIterationRunner(object):
         grompp_tasks, mdrun_tasks = [], []
         if mpi.is_master():
             for point_idx, point in enumerate(self.string):
-                if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                if self.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                     continue
                 string_restraints = dict()
                 for cv_idx, position in enumerate(point):
                     string_restraints['pull-coord{}-init'.format(cv_idx + 1)] = position
                 mdp_file = self._create_restrained_mdp_file(point_idx, string_restraints)
                 output_dir = abspath("{}/{}/{}/restrained/".format(
-                    self.config.md_dir,
+                    self.md_dir,
                     self.iteration,
                     point_idx
                 ))
@@ -69,10 +77,10 @@ class StringIterationRunner(object):
                 else:
                     grompp_args = dict(
                         mdp_file=mdp_file,
-                        index_file="{}/index.ndx".format(self.config.topology_dir),
-                        topology_file="{}/topol.top".format(self.config.topology_dir),
+                        index_file="{}/index.ndx".format(self.topology_dir),
+                        topology_file="{}/topol.top".format(self.topology_dir),
                         structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
-                            self.config.md_dir,
+                            self.md_dir,
                             self.iteration - 1,
                             point_idx
                         )),
@@ -80,15 +88,15 @@ class StringIterationRunner(object):
                         mdp_output_file="{}/mdout.mdp".format(output_dir)
                     )
                     grompp_tasks.append(('grompp', grompp_args))
-                #SPC Pick up checkpoint files if available
+                # SPC Pick up checkpoint files if available
                 check_point_file = abspath("{}/state.cpt".format(output_dir))
                 if not os.path.isfile(check_point_file):
-                    check_point_file=None
+                    check_point_file = None
                 mdrun_confout = "{}/confout.gro".format(output_dir)
                 if os.path.isfile(mdrun_confout):
                     logger.debug("File %s already exists. Not running mdrun again", mdrun_confout)
                 else:
-                #SPC Pick up checkpoint files if available
+                    # SPC Pick up checkpoint files if available
                     mdrun_args = dict(
                         output_dir=output_dir,
                         tpr_file=tpr_file,
@@ -102,12 +110,12 @@ class StringIterationRunner(object):
         grompp_tasks, mdrun_tasks = [], []
         if mpi.is_master():
             for point_idx, point in enumerate(self.string):
-                if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                if self.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                     continue
-                for swarm_idx in range(self.config.swarm_size):
-                    mdp_file = abspath("{}/swarms.mdp".format(self.config.mdp_dir))
+                for swarm_idx in range(self.swarm_size):
+                    mdp_file = abspath("{}/swarms.mdp".format(self.mdp_dir))
                     output_dir = abspath("{}/{}/{}/s{}/".format(
-                        self.config.md_dir,
+                        self.md_dir,
                         self.iteration,
                         point_idx,
                         swarm_idx
@@ -118,10 +126,10 @@ class StringIterationRunner(object):
                     else:
                         grompp_args = dict(
                             mdp_file=mdp_file,
-                            index_file="{}/index.ndx".format(self.config.topology_dir),
-                            topology_file="{}/topol.top".format(self.config.topology_dir),
+                            index_file="{}/index.ndx".format(self.topology_dir),
+                            topology_file="{}/topol.top".format(self.topology_dir),
                             structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
-                                self.config.md_dir,
+                                self.md_dir,
                                 self.iteration,
                                 point_idx
                             )),
@@ -129,15 +137,15 @@ class StringIterationRunner(object):
                             mdp_output_file="{}/mdout.mdp".format(output_dir)
                         )
                         grompp_tasks.append(('grompp', grompp_args))
-                    #SPC Pick up checkpoint files if available
+                    # SPC Pick up checkpoint files if available
                     check_point_file = abspath("{}/state.cpt".format(output_dir))
                     if not os.path.isfile(check_point_file):
-                        check_point_file=None
+                        check_point_file = None
                     mdrun_confout = "{}/confout.gro".format(output_dir)
                     if os.path.isfile(mdrun_confout):
                         logger.debug("File %s already exists. Not running mdrun again", mdrun_confout)
                     else:
-                #SPC Pick up checkpoint files if available
+                        # SPC Pick up checkpoint files if available
                         mdrun_args = dict(
                             output_dir=output_dir,
                             tpr_file=tpr_file,
@@ -150,14 +158,14 @@ class StringIterationRunner(object):
     def _compute_new_string(self) -> bool:
         drifted_string = self.string.copy()
         n_cvs = self.string.shape[1]
-        if self.config.swarm_size > 0:
+        if self.swarm_size > 0:
             for point_idx, point in enumerate(self.string):
-                if self.config.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
+                if self.fixed_endpoints and point_idx in [0, self.string.shape[0] - 1]:
                     continue
-                swarm_drift = np.empty((self.config.swarm_size, n_cvs))
-                for swarm_idx in range(self.config.swarm_size):
+                swarm_drift = np.empty((self.swarm_size, n_cvs))
+                for swarm_idx in range(self.swarm_size):
                     output_dir = abspath("{}/{}/{}/s{}/".format(
-                        self.config.md_dir,
+                        self.md_dir,
                         self.iteration,
                         point_idx,
                         swarm_idx
@@ -195,13 +203,13 @@ class StringIterationRunner(object):
         return True
 
     def _get_string_filepath(self, iteration: int) -> str:
-        return "{}/string{}.txt".format(self.config.string_dir, iteration)
+        return "{}/string{}.txt".format(self.string_dir, iteration)
 
     def _create_restrained_mdp_file(self, point_idx: int, string_restraints: Dict[str, Any]) -> str:
         # TODO use gmxapi#mdrun#override_input when it supports supports pull-coord1-init
-        mdp_template_file = abspath("{}/{}".format(self.config.mdp_dir, "restrained.mdp"))
+        mdp_template_file = abspath("{}/{}".format(self.mdp_dir, "restrained.mdp"))
         mdp_file = abspath("{}/{}/{}/restrained/restrained.mdp".format(
-            self.config.md_dir,
+            self.md_dir,
             self.iteration,
             point_idx,
         ))
@@ -211,3 +219,12 @@ class StringIterationRunner(object):
             for k, v in string_restraints.items():
                 f.write("{}={}\n".format(k, v))
         return mdp_file
+
+    @classmethod
+    def from_config(clazz, config: Config, **kwargs):
+        return clazz(
+            path=np.loadtxt(config.steered_md_target_path),
+            mdp_file=config.mdp_dir + "/steered.mdp",
+            md_dir=config.md_dir,
+            **kwargs
+        )

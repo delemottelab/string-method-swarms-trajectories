@@ -4,7 +4,7 @@ import shutil
 import gmxapi as gmx
 import numpy as np
 
-from . import logger
+from stringmethod import logger
 
 
 def grompp(structure_file: str, mdp_file: str, topology_file: str, index_file: str, tpr_file: str,

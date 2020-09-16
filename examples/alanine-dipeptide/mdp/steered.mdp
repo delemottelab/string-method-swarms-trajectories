@@ -1,10 +1,9 @@
-; MDP options for an individual swarm simulation
-; The output pull coordinates will be used to compute the drift along the string.
-
+; MDP options for the steered simulation between two points along the initial string.
+; Restrained equilibration simulations will be launched from the output coordinates of this simulation
 
 ; Run parameters
 integrator              = md        ; leap-frog integrator
-nsteps                  = 50    ;
+nsteps                  = 150000    ;
 dt                      = 0.002     ; 2 fs
 ; Output control
 nstxout                 = 0         ; suppress bulky .trr file by specifying 
@@ -12,7 +11,7 @@ nstvout                 = 0         ; 0 for output frequency of nstxout,
 nstfout                 = 0         ; nstvout, and nstfout
 nstenergy               = 0      ; save energies every 10.0 ps
 nstlog                  = 0      ; update log file every 10.0 ps
-nstxout-compressed      = 50      ; save compressed coordinates every 10.0 ps
+nstxout-compressed      = 15000      ; save compressed coordinates for first and last frame
 compressed-x-grps       = System    ; save the whole system
 ; Bond parameters
 continuation            = yes       ; Restarting after NPT 
@@ -48,7 +47,7 @@ DispCorr                = EnerPres  ; account for cut-off vdW scheme
 ; Velocity generation
 gen_vel                 = no        ; Velocity generation is off 
 
-; Pull code for output. no restraints (k=0)
+; Pull code
 pull                   = yes      
 pull-ngroups           = 5                  
 pull-group1-name  	   = C0
@@ -58,17 +57,22 @@ pull-group4-name  	   = C
 pull-group5-name  	   = N2
 
 pull-ncoords			= 2
+
+;phi
 pull-coord1-geometry	= dihedral
 pull-coord1-groups	    = 1 2 2 3 3 4
-pull-coord1-k			= 0
+pull-coord1-k			= 100
+;pull-coord1-rate		= 0
+;pull-coord1-init	   = 0
+
+;psi
 pull-coord2-geometry	= dihedral
 pull-coord2-groups	    = 2 3 3 4 4 5
-pull-coord2-k			= 0
-; pull-coord1-init and  pull-coord2-init are set by the code during run time
+pull-coord2-k			= 100
 
-
+; pull-coord1-rate & pull-coord1-init etc. are set by the code during run time
 
 pull-print-components			= no ; output pull coordinates
-pull-nstxout            = 50                ; Step interval to output the coordinate values to the pullx.xvg.
+pull-nstxout            = 15000                ; Step interval to output the coordinate values to the pullx.xvg.
 pull-nstfout			= 0
 

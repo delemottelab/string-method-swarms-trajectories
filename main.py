@@ -15,7 +15,7 @@ def parse_args():
 def run(conf: config.Config, start_mode, iteration=1) -> None:
     logger.debug("Using config %s", conf)
     if start_mode == 'string':
-        r = stringmd.StringIterationRunner(config=conf,
+        r = stringmd.StringIterationRunner.from_config(config=conf,
                                            iteration=iteration,
                                            append=start_mode == 'auto')
         r.run()
