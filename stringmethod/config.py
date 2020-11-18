@@ -30,7 +30,7 @@ class Config(object):
     """Keeping the endpoints of the strings fixed between iterations (True/False)"""
     fixed_endpoints: Optional[bool] = True
     """Input/output location for the steered MD input path"""
-    steered_md_target_path: Optional[str] = "path.txt"
+    steered_md_target_path: Optional[str] = "strings/string0.txt"
     """Steered MD start coordinates"""
     steered_md_start_coordinates: Optional[str] = "confout.gro"
     """

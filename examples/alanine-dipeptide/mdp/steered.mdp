@@ -61,18 +61,18 @@ pull-ncoords			= 2
 ;phi
 pull-coord1-geometry	= dihedral
 pull-coord1-groups	    = 1 2 2 3 3 4
-pull-coord1-k			= 100
+pull-coord1-k			= 1000
 ;pull-coord1-rate		= 0
 ;pull-coord1-init	   = 0
 
 ;psi
 pull-coord2-geometry	= dihedral
 pull-coord2-groups	    = 2 3 3 4 4 5
-pull-coord2-k			= 100
+pull-coord2-k			= 1000
 
 ; pull-coord1-rate & pull-coord1-init etc. are set by the code during run time
 
 pull-print-components			= no ; output pull coordinates
-pull-nstxout            = 15000                ; Step interval to output the coordinate values to the pullx.xvg.
+pull-nstxout            = 30000                ; Step interval to output the coordinate values to the pullx.xvg.
 pull-nstfout			= 0
 

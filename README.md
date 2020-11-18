@@ -29,12 +29,21 @@ We recommend you to use one of the [examples below](#examples) as a template.
 
 
 ### Molecular Dynamics Properties (MDP) files
+#### Steered MD (preprocessing step) files**
+**steered.mdp**
+
+Contains the settings to run a steered MD with pull code restraints between two points on your input string. 
+
+In addition to this you need start coordinates to your steered MD simulation (default name **start.gro**).
+
+#### String method files
+
 You need two MDP files:
 
 **restrained.mdp**
 
 Contains the settings to run a short equilibration with pull code restraints before launching the swarms. 
-All required pull code parameters except for ```pull-code-init``` should be set in this file. 
+All required pull code parameters except for ```pull-code-init``` should be set in this file. It is likely very similar to ```steered.mdp```.
 
 **swarms.mdp** 
 
@@ -73,6 +82,8 @@ Every row in your file defines the CV coordinates for a point on the string.
 The first column refers to the first CV/pull coordinate etc.
 
 #### Input coordinates
+**Note**: unless you have a trajectory to derive input coordinates from, we recommend you to you steeredMD to initialize the simulation. If you use the steeredMD script (```python main.py --start_mode=steered```), the string input will be prepared for you.
+
 For every point on your string your need a snapshot with all atom coordinates called **confout.gro**. 
 Create one directory per point and put the corresponding snaphot in that directory according to the layout below.
 You don't need to provide .gro-files for the first and last point on the string if your endpoints are fixed, which is the default. 
@@ -138,7 +149,7 @@ The program can run either in an MPI environment, automatically distributing the
 python main.py --config_file=config.json
 ```
 This will run all the simulations in sequential order, first all points, then all swarm trajectories per point.
-Here we've also provided an optional config file. 
+Here we've also provided an optional config file. You can also set the parameter `start_mode=steered` or `start_mode=postprocessing` to run steeredMD or postprocessing.
 
 In practice, unless the machine has hardware acceleration (i.e. a GPU) you probably need to run the string method in a distributed environment.
 

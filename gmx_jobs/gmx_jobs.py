@@ -3,7 +3,8 @@ from typing import List, Tuple
 
 from gmx_jobs.mpi_master_slave import WorkQueue, Master, Slave
 from gmx_jobs.mpi_master_slave.exceptions import JobFailedException
-from stringmethod import mpi, mdtools, logger
+from stringmethod import mpi, logger
+import mdtools
 
 _instance = None
 

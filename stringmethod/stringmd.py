@@ -6,8 +6,9 @@ from typing import Optional, Dict, Any
 
 import numpy as np
 
-from stringmethod import logger, mdtools, utils
+import mdtools
 from gmx_jobs import *
+from stringmethod import utils
 from stringmethod.config import Config
 from stringmethod.utils.scaling import MinMaxScaler
 from . import mpi

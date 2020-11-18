@@ -15,18 +15,19 @@ from stringmethod.config import Config
 class SteeredRunner(object):
     path: np.array = None
     mdp_file: Optional[str] = "steered.mdp"
-    start_coordinates: Optional[str] = "confout.gro"
+    start_coordinates: Optional[str] = "start.gro"
     md_dir: Optional[str] = "md"
     topology_dir: Optional[str] = "topology"
-    simulation_length_ps: Optional[float] = None
+    steered_simulation_length_ps: Optional[float] = None
 
     def __post_init__(self):
-        if self.simulation_length_ps is None:
+        if self.steered_simulation_length_ps is None:
             mdp_options = utils.parse_mdp(self.mdp_file)
-            self.simulation_length_ps = mdp_options.get('dt', 0.001) * mdp_options.get('nsteps', 0)
-        if self.simulation_length_ps <= 0:
+            self.steered_simulation_length_ps = mdp_options.get('dt', 0.001) * mdp_options.get('nsteps', 0)
+        if self.steered_simulation_length_ps <= 0:
             raise ValueError(
-                "Simulation length for steered MD was set to %s picoseconds. Did you set 'nsteps' to a reasonable value?")
+                "Simulation length for steered MD was set to {} picoseconds. Did you set 'nsteps' to a reasonable value?"
+                    .format(self.steered_simulation_length_ps))
 
     def run(self):
         """
@@ -48,7 +49,7 @@ class SteeredRunner(object):
         output_dir = self._get_md_dir(end_point_idx)
         self._create_dir(end_point_idx)
         start_point, end_point = self.path[start_point_idx], self.path[end_point_idx]
-        pull_rates = (end_point - start_point) / self.simulation_length_ps
+        pull_rates = (end_point - start_point) / self.steered_simulation_length_ps
         modified_mdp_file = output_dir + "/grompp.mdp"
         shutil.copy(self.mdp_file, modified_mdp_file)
         with open(modified_mdp_file, 'a') as f:
@@ -63,11 +64,15 @@ class SteeredRunner(object):
         if os.path.isfile(tpr_file):
             logger.debug("File %s already exists. Not running grompp again", tpr_file)
         else:
+            in_file = self._get_md_dir(start_point_idx) + "/confout.gro"
+            if not os.path.exists(in_file):
+                raise IOError(
+                    "File {} does not exist. Cannot continue steered MD. Check the logs for errors".format(in_file))
             grompp_args = dict(
                 mdp_file=modified_mdp_file,
                 index_file="{}/index.ndx".format(self.topology_dir),
                 topology_file="{}/topol.top".format(self.topology_dir),
-                structure_file=self._get_md_dir(start_point_idx + "/confout.gro"),
+                structure_file=in_file,
                 tpr_file=tpr_file,
                 mdp_output_file="{}/mdout.mdp".format(output_dir)
             )
@@ -92,10 +97,10 @@ class SteeredRunner(object):
     def _create_dir(self, point_idx):
         sdir = self._get_md_dir(point_idx)
         if not os.path.exists(sdir):
-            os.path.makedirs(sdir)
+            os.makedirs(sdir)
 
     def _get_md_dir(self, point_idx):
-        return abspath(self.md_dir) + "/steered/" + str(point_idx)
+        return abspath(self.md_dir) + "/0/" + str(point_idx)
 
     @classmethod
     def from_config(clazz, config: Config, **kwargs):

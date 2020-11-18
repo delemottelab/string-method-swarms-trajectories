@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any
 
 
 def parse_mdp(mdp_file: str) -> Dict[str, Any]:
@@ -9,8 +9,7 @@ def parse_mdp(mdp_file: str) -> Dict[str, Any]:
     """
     res = dict()
     with open(mdp_file) as fp:
-        line = fp.readline()
-        while line:
+        for line in fp.readlines():
             line = line.split(";")[0]  # Remove comments
             if "=" not in line:
                 continue  # empty line or comment

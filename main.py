@@ -16,14 +16,13 @@ def run(conf: config.Config, start_mode, iteration=1) -> None:
     logger.debug("Using config %s", conf)
     if start_mode == 'string':
         r = stringmd.StringIterationRunner.from_config(config=conf,
-                                           iteration=iteration,
-                                           append=start_mode == 'auto')
+                                                       iteration=iteration,
+                                                       append=start_mode == 'auto')
         r.run()
         return run(conf, start_mode='postprocessing')
     elif start_mode == 'steered':
-        r = steeredmd.SteeredRunner(conf)
+        r = steeredmd.SteeredRunner.from_config(config=conf)
         r.run()
-        return run(conf, start_mode='string')
     elif start_mode == 'postprocessing':
         postprocessing.run(conf)
     else:

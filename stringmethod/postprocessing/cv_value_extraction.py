@@ -5,7 +5,8 @@ from typing import Optional
 
 import numpy as np
 
-from stringmethod import logger, mdtools
+from stringmethod import logger
+import mdtools
 from stringmethod.config import Config
 from .base import AbstractPostprocessor
 
