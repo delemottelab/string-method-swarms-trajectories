@@ -6,7 +6,6 @@ from typing import Optional, Dict, Any
 
 import numpy as np
 
-import mdtools
 from gmx_jobs import *
 from stringmethod import utils
 from stringmethod.config import Config
@@ -16,7 +15,6 @@ from . import mpi
 
 @dataclass
 class StringIterationRunner(object):
-    config: Config
     append: bool
     iteration: int
     """Coordinates of the current numpy array"""
@@ -76,15 +74,20 @@ class StringIterationRunner(object):
                 if os.path.isfile(tpr_file):
                     logger.debug("File %s already exists. Not running grompp again", tpr_file)
                 else:
+                    in_file = abspath("{}/{}/{}/restrained/confout.gro".format(
+                        self.md_dir,
+                        self.iteration - 1,
+                        point_idx
+                    ))
+                    if not os.path.exists(in_file):
+                        raise IOError(
+                            "File {} does not exist. Cannot continue string MD. Check the logs for errors".format(
+                                in_file))
                     grompp_args = dict(
                         mdp_file=mdp_file,
                         index_file="{}/index.ndx".format(self.topology_dir),
                         topology_file="{}/topol.top".format(self.topology_dir),
-                        structure_file=abspath("{}/{}/{}/restrained/confout.gro".format(
-                            self.md_dir,
-                            self.iteration - 1,
-                            point_idx
-                        )),
+                        structure_file=in_file,
                         tpr_file=tpr_file,
                         mdp_output_file="{}/mdout.mdp".format(output_dir)
                     )
@@ -224,8 +227,13 @@ class StringIterationRunner(object):
     @classmethod
     def from_config(clazz, config: Config, **kwargs):
         return clazz(
-            path=np.loadtxt(config.steered_md_target_path),
-            mdp_file=config.mdp_dir + "/steered.mdp",
+            string=np.loadtxt(config.steered_md_target_path),
+            mdp_dir=config.mdp_dir,
+            max_iterations=config.max_iterations,
+            swarm_size=config.swarm_size,
+            fixed_endpoints=config.fixed_endpoints,
+            string_dir=config.string_dir,
             md_dir=config.md_dir,
+            topology_dir=config.topology_dir,
             **kwargs
         )

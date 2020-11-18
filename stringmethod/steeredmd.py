@@ -100,7 +100,7 @@ class SteeredRunner(object):
             os.makedirs(sdir)
 
     def _get_md_dir(self, point_idx):
-        return abspath(self.md_dir) + "/0/" + str(point_idx)
+        return abspath(self.md_dir) + "/0/" + str(point_idx) + "/restrained/"
 
     @classmethod
     def from_config(clazz, config: Config, **kwargs):
