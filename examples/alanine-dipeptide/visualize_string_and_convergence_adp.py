@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def show(max_iter=int(1e10), stride=1):
+def show(max_iter=int(1e10), stride=5):
     last = None
     convergence = []
     iterations = []

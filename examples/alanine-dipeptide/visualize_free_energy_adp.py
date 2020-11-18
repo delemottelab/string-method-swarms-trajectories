@@ -27,8 +27,8 @@ def show(grid: np.array,
                           cmap=plt.cm.rainbow)
         cbar = plt.colorbar(im)
         cbar.set_label("[kcal/mol]")
-        plt.ylabel("[rad]")
-    plt.xlabel("[rad]")
+        plt.ylabel("phi")
+    plt.xlabel("psi")
     plt.tight_layout()
     plt.savefig("free_energy.png")
     plt.show()
@@ -63,22 +63,22 @@ def compute():
     config = load_config("config.json")
     cv_coordinates = np.load("postprocessing/cv_coordinates.npy")
     # Convert from degrees to radians
-    cv_coordinates = cv_coordinates * np.pi / 180
-
-    cv_coordinates = handle_periodicity(cv_coordinates)
+    # cv_coordinates = cv_coordinates * np.pi / 180
+    #
+    # cv_coordinates = handle_periodicity(cv_coordinates)
 
     # Uncomment to only select one CV
     # cv_coordinates = cv_coordinates[:, :, 0]
-    tc = TransitionCountCalculator(config=config,
-                                   # You want to play around with n_grid_points.
-                                   # It sets the resolution. Its optimal value depends on your swarm trajectory length
-                                   n_grid_points=13,
-                                   cv_coordinates=cv_coordinates)
+    tc = TransitionCountCalculator.from_config(config=config,
+                                               # You want to play around with n_grid_points.
+                                               # It sets the resolution. Its optimal value depends on your swarm trajectory length
+                                               n_grid_points=13,
+                                               cv_coordinates=cv_coordinates)
     tc.run()
     tc.persist()
-    fc = FreeEnergyCalculator(config=config,
-                              grid=tc.grid,
-                              transition_count=tc.transition_count)
+    fc = FreeEnergyCalculator.from_config(config=config,
+                                          grid=tc.grid,
+                                          transition_count=tc.transition_count)
     fc.run()
     fc.persist()
     return tc.grid, fc.free_energy
