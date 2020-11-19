@@ -69,6 +69,8 @@ pull-coord1-k			= 1000
 pull-coord2-geometry	= dihedral
 pull-coord2-groups	    = 2 3 3 4 4 5
 pull-coord2-k			= 1000
+;pull-coord2-rate		= 0
+;pull-coord2-init	   = 0
 
 ; pull-coord1-rate & pull-coord1-init etc. are set by the code during run time
 
