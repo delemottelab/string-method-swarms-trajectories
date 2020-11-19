@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Include your allocation number
-#SBATCH -A 2019-2-34
+#SBATCH -A XXXX-XX-XX
 
 # The name of the job in the queue
 #SBATCH -J adpString
@@ -19,7 +19,7 @@
 #SBATCH -e error.log
 #SBATCH -o output.log
 
-echo "Starting alanine dipeptide string simulation on the Beskow super computer"
+echo "Starting beta2 string simulation on the Beskow super computer"
 
 __conda_setup="$('/pdc/vol/anaconda/2019.03/py37/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Include your allocation number
-#SBATCH -A 2019-2-34
+#SBATCH -A XXXX-XX-XX
 
 # The name of the job in the queue
 #SBATCH -J beta2String
