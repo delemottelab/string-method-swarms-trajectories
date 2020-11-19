@@ -27,8 +27,8 @@ def show(grid: np.array,
                           cmap=plt.cm.rainbow)
         cbar = plt.colorbar(im)
         cbar.set_label("[kcal/mol]")
-        plt.ylabel("phi")
-    plt.xlabel("psi")
+        plt.xlabel("$\phi$ [degrees]")
+        plt.ylabel("$\psi$ [degrees]")
     plt.tight_layout()
     plt.savefig("free_energy.png")
     plt.show()
@@ -36,7 +36,8 @@ def show(grid: np.array,
 
 def handle_periodicity(cv_coordinates: np.array, dpca: bool = False) -> np.array:
     """
-    # Handle periodic boundary conditions by taking modules 2pi or performing dihedral-PCA
+    (Optional method)
+    Handle periodic boundary conditions by taking modules 2pi or performing dihedral-PCA
     :param dpca: if True, perform dPCA onto the input and convert it into two components
     :param cv_coordinates:
     :return:
@@ -61,6 +62,14 @@ def handle_periodicity(cv_coordinates: np.array, dpca: bool = False) -> np.array
 
 def compute():
     config = load_config("config.json")
+
+    ce = CvValueExtractor.from_config(
+        config=config,
+        first_iteration=10  # Exclude the first iterations to let the system equilibrate.
+    )
+    ce.run()
+    ce.persist()
+
     cv_coordinates = np.load("postprocessing/cv_coordinates.npy")
     # Convert from degrees to radians
     # cv_coordinates = cv_coordinates * np.pi / 180
@@ -70,8 +79,8 @@ def compute():
     # Uncomment to only select one CV
     # cv_coordinates = cv_coordinates[:, :, 0]
     tc = TransitionCountCalculator.from_config(config=config,
-                                               # You want to play around with n_grid_points.
-                                               # It sets the resolution. Its optimal value depends on your swarm trajectory length
+                                               # You probably want to play around with n_grid_points.
+                                               # It sets the resolution. Its optimal value depends on your swarm trajectory length and sample size
                                                n_grid_points=13,
                                                cv_coordinates=cv_coordinates)
     tc.run()
