@@ -135,7 +135,7 @@ This JSON file will be loaded as a `` Config`` object defined in **stringmethod/
 You can override parameters such as:
  * swarm_size=int (default: 32). The number of trajectories in a swarm.  
  * max_iterations=int (default: 100). The maximum number of iterations before the program automatically goes into processing. 
- * fixed_endpoints=true/false (default: false). Ff the endpoints should be fixed or not. 
+ * fixed_endpoints=true/false (default: false). If the endpoints should be fixed or not. 
  Fixed endpoints will not be updated between iterations. 
  No swarm trajectories will be launched from the endpoints.
 You can also change the location of the input/output directories.
