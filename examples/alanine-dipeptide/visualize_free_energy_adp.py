@@ -30,7 +30,7 @@ def show(grid: np.array,
         plt.xlabel("$\phi$ [degrees]")
         plt.ylabel("$\psi$ [degrees]")
     plt.tight_layout()
-    plt.savefig("free_energy.png")
+    plt.savefig("free_energy.svg", transparent=True)
     plt.show()
 
 

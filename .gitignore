@@ -140,3 +140,4 @@ examples/*/postprocessing/*.png
 examples/*/postprocessing/postprocessing
 examples/*/strings/*.png
 examples/*/*.png
+examples/*/*.svg

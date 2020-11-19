@@ -31,7 +31,7 @@ def show(max_iter=int(1e10), strings_per_average=20):
     plt.ylabel("$\psi$ [degrees]")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("strings.png")
+    plt.savefig("strings.svg", transparent=True)
     plt.show()
 
 

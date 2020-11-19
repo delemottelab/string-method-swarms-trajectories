@@ -8,6 +8,8 @@
     by Oliver Fleetwood and Marko Petrovic 2017-2020.
     https://github.com/delemottelab/string-method-gmxapi
 
+![Image of string](examples/adp-free_energy_with-string.png)
+
 This repository contains an implementation of the string method with swarms of trajectories [[1,2]](#references)
 using [GROMACS' python API](http://manual.gromacs.org/current/gmxapi/userguide/usage.html)[[3,4]](#references).
 
