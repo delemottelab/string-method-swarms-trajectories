@@ -25,6 +25,8 @@ using [GROMACS' python API](http://manual.gromacs.org/current/gmxapi/userguide/u
  
 We plan on automating dependency management with pip or conda.  
 
+The environment.yml contains library versions for which the package has been tested. The package has been tested with GROMACS2020.2.
+
 ## Preparing the files
 To launch a simulation you first need to set up a system, configure Collective Variables (CVs; a.k.a reaction coordinates) with GROMACS' pull code, and provide an initial string.
 We recommend you to use one of the [examples below](#examples) as a template. 
