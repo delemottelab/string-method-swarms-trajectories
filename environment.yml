@@ -39,3 +39,4 @@ dependencies:
   - zlib=1.2.11=h7b6447c_3
   - pip:
     - gmxapi==0.1.0.1
+# GROMACS version 2020.2
