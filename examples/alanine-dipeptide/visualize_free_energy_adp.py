@@ -65,6 +65,7 @@ def compute():
 
     ce = CvValueExtractor.from_config(
         config=config,
+        # last_iteration=150,
         first_iteration=10  # Exclude the first iterations to let the system equilibrate.
     )
     ce.run()
@@ -81,7 +82,7 @@ def compute():
     tc = TransitionCountCalculator.from_config(config=config,
                                                # You probably want to play around with n_grid_points.
                                                # It sets the resolution. Its optimal value depends on your swarm trajectory length and sample size
-                                               n_grid_points=13,
+                                               n_grid_points=10,
                                                cv_coordinates=cv_coordinates)
     tc.run()
     tc.persist()
