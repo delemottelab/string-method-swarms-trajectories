@@ -200,8 +200,8 @@ mpiexec -n 5 -m mpi4py main.py
 
 ### Handling restarts
 You can just start the script the same way as you did the first time, it will figure out where it was before.
-Otionally you can start the python script with a flag --iteration=X, then it will start from that step directly.
-There's no support for starting from checkpoint (.cpt) files yet.
+Optionally you can start the python script with a flag --iteration=X, then it will start from that step directly.
+
 
 ### Recovering after a crash
 Assume that your simulation files are corrupt or that you realize your mdp options are incorrect, and you need to rerun part of the simulation. 
