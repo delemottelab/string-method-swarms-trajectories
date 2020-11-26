@@ -157,6 +157,8 @@ python main.py --config_file=config.json
 This will run all the simulations in sequential order, first all points, then all swarm trajectories per point.
 Here we've also provided an optional config file. You can also set the parameter `start_mode=steered` or `start_mode=postprocessing` to run steeredMD or postprocessing.
 
+Postprocessing computes the free energy surface and generates the count matrix.
+
 In practice, unless the machine has hardware acceleration (i.e. a GPU) you probably need to run the string method in a distributed environment.
 
 ### Running with MPI in a HPC environment
