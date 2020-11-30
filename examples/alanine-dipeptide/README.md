@@ -6,7 +6,7 @@ String method for alanine dipeptide with it's phi-psi angles
 # Running the example
 There are two bash scripts, **run_steered.sh** and **run_string.sh**, for running it on a single machine. 
 You need to run steered MD before string MD. 
-The number of beads and initial string to be generated in the steering simulation is determined by the string0.txt file. You can choose between a short, intermediate (default), long string or make your own.
+The number of beads and initial string to be generated in the steering simulation is determined by the string0.txt file. You can choose between a short, intermediate, long string (default) or make your own.
 There's also a script **submit_beskow.sh** for running it in a slurm environment with MPI.
 
 # Postprocessing
