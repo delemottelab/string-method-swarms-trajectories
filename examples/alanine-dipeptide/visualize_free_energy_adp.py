@@ -65,6 +65,7 @@ def compute():
 
     ce = CvValueExtractor.from_config(
         config=config,
+        # last_iteration=150,
         first_iteration=10  # Exclude the first iterations to let the system equilibrate.
     )
     ce.run()

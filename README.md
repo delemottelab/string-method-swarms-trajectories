@@ -28,7 +28,7 @@ We plan on automating dependency management with pip or conda.
 The environment.yml contains library versions for which the package has been tested. The package has been tested with GROMACS2020.2.
 
 ## Preparing the files
-To launch a simulation you first need to set up a system, configure Collective Variables (CVs; a.k.a reaction coordinates) with GROMACS' pull code, and provide an initial string.
+To launch a simulation you first need to set up a system (start.gro, topol.top, index.ndx), configure Collective Variables (CVs; a.k.a reaction coordinates) with GROMACS' pull code (restrained.mdp, swarms.mdp, steered.mdp), and provide an initial string (string0.txt).
 We recommend you to use one of the [examples below](#examples) as a template. 
 
 
@@ -38,7 +38,9 @@ We recommend you to use one of the [examples below](#examples) as a template.
 
 Contains the settings to run a steered MD with pull code restraints between two points on your input string. 
 
-In addition to this you need start coordinates to your steered MD simulation (default name **start.gro**).
+In addition to this you need start coordinates to your steered MD simulation (default name **start.gro**) and a string0.txt.
+
+The steered MD engine will generate a simultion that steers the system from start.gro through the beads in string0.txt and generates for each of them a folder/simulation in `md/0/`
 
 #### String method files
 
@@ -92,7 +94,7 @@ For every point on your string your need a snapshot with all atom coordinates ca
 Create one directory per point and put the corresponding snaphot in that directory according to the layout below.
 You don't need to provide .gro-files for the first and last point on the string if your endpoints are fixed, which is the default. 
 
-Note that these snapshots should be well-equilibrated and be close to the coordinates defined in **string0.txt**. 
+Note that these snapshots should be well-equilibrated and be *close* to the coordinates defined in **string0.txt**. 
 This can for example be acheived by running steered-MD along your initial string between two endpoints.
 The script will only equilibrate the system according to ```nsteps``` in **restrained.mdp**. 
 
@@ -155,6 +157,8 @@ python main.py --config_file=config.json
 This will run all the simulations in sequential order, first all points, then all swarm trajectories per point.
 Here we've also provided an optional config file. You can also set the parameter `start_mode=steered` or `start_mode=postprocessing` to run steeredMD or postprocessing.
 
+Postprocessing computes the free energy surface and generates the count matrix.
+
 In practice, unless the machine has hardware acceleration (i.e. a GPU) you probably need to run the string method in a distributed environment.
 
 ### Running with MPI in a HPC environment
@@ -198,8 +202,8 @@ mpiexec -n 5 -m mpi4py main.py
 
 ### Handling restarts
 You can just start the script the same way as you did the first time, it will figure out where it was before.
-Otionally you can start the python script with a flag --iteration=X, then it will start from that step directly.
-There's no support for starting from checkpoint (.cpt) files yet.
+Optionally you can start the python script with a flag --iteration=X, then it will start from that step directly.
+
 
 ### Recovering after a crash
 Assume that your simulation files are corrupt or that you realize your mdp options are incorrect, and you need to rerun part of the simulation. 
