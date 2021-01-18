@@ -19,6 +19,7 @@ class SteeredRunner(object):
     md_dir: Optional[str] = "md"
     topology_dir: Optional[str] = "topology"
     steered_simulation_length_ps: Optional[float] = None
+    mdrun_options: Optional[tuple] = None
 
     def __post_init__(self):
         if self.steered_simulation_length_ps is None:
@@ -91,6 +92,7 @@ class SteeredRunner(object):
                 output_dir=output_dir,
                 tpr_file=tpr_file,
                 check_point_file=check_point_file,
+                mdrun_options=self.mdrun_options
             )
             gmx_jobs.submit(tasks=[('mdrun', mdrun_args)], step="steered_mdrun_point{}".format(end_point_idx))
 
@@ -109,5 +111,6 @@ class SteeredRunner(object):
             mdp_file=config.mdp_dir + "/steered.mdp",
             md_dir=config.md_dir,
             topology_dir=config.topology_dir,
+            mdrun_options=config.mdrun_options,
             **kwargs
         )

@@ -26,6 +26,7 @@ class StringIterationRunner(object):
     md_dir: Optional[str] = "md"
     topology_dir: Optional[str] = "topology"
     mdp_dir: Optional[str] = "mdp"
+    mdrun_options: Optional[tuple] = None
 
     def run(self):
 
@@ -105,6 +106,7 @@ class StringIterationRunner(object):
                         output_dir=output_dir,
                         tpr_file=tpr_file,
                         check_point_file=check_point_file,
+                        mdrun_options=self.mdrun_options
                     )
                     mdrun_tasks.append(('mdrun', mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="restrained_grompp")
@@ -154,6 +156,7 @@ class StringIterationRunner(object):
                             output_dir=output_dir,
                             tpr_file=tpr_file,
                             check_point_file=check_point_file,
+                            mdrun_options=self.mdrun_options
                         )
                         mdrun_tasks.append(('mdrun', mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="swarms_grompp")
@@ -235,5 +238,6 @@ class StringIterationRunner(object):
             string_dir=config.string_dir,
             md_dir=config.md_dir,
             topology_dir=config.topology_dir,
+            mdrun_options=config.mdrun_options,
             **kwargs
         )

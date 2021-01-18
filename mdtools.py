@@ -36,21 +36,25 @@ def _move_all_files(src, dest):
         shutil.move(os.path.join(src, f), os.path.join(dest, f))
 
 
-def mdrun(output_dir: str, tpr_file: str, check_point_file: str = None):
+def mdrun(output_dir: str, tpr_file: str, check_point_file: str = None, mdrun_options: list = None):
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
     input_files = {'-s': tpr_file}
     if check_point_file is not None:
         input_files['-cpi'] = check_point_file
     #SPC increased state printing to every 5 minutes since swarms are short
+    if mdrun_options == None:
+        mdrun_options0 = []
+    else:
+        mdrun_options0 = mdrun_options
     md = gmx.commandline_operation(executable="gmx",
-                                   arguments=["mdrun",'-cpt', '5'],
+            arguments=["mdrun",'-cpt', '5'] + mdrun_options0,
                                    input_files=input_files,
                                    output_files={})
     md.run()
     output = str(md.output.erroroutput.result()).strip()
     if output:
-        logger.info("grompp output:\n%s", output)
+        logger.info("mdrun output:\n%s", output)
     os.chdir(cwd)
     # simulation_input = gmx.read_tpr(tpr_file)
     # md = gmx.mdrun(input=simulation_input)

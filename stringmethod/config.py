@@ -33,6 +33,8 @@ class Config(object):
     steered_md_target_path: Optional[str] = "strings/string0.txt"
     """Steered MD start coordinates"""
     steered_md_start_coordinates: Optional[str] = "confout.gro"
+    """gmx mdrun additional options"""
+    mdrun_options: Optional[tuple] = None 
     """
     Version of the software code, defined as stringmethod.version. 
     Might be used in the future to ensure backwards compatibility.
