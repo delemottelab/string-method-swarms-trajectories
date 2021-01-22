@@ -33,8 +33,12 @@ class Config(object):
     steered_md_target_path: Optional[str] = "strings/string0.txt"
     """Steered MD start coordinates"""
     steered_md_start_coordinates: Optional[str] = "confout.gro"
-    """gmx mdrun additional options"""
-    mdrun_options: Optional[tuple] = None 
+    """gmx mdrun additional options for steered simulations"""
+    mdrun_options_steered: Optional[tuple] = None 
+    """gmx mdrun additional options for swarm simulations"""
+    mdrun_options_swarms: Optional[tuple] = None 
+    """gmx mdrun additional options for restrained simulations"""
+    mdrun_options_restrained: Optional[tuple] = None 
     """
     Version of the software code, defined as stringmethod.version. 
     Might be used in the future to ensure backwards compatibility.
