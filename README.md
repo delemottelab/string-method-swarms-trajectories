@@ -190,6 +190,8 @@ To do so, the number of points on the string (excluding the fixed endpoints) sho
 The perfect combination of MPI ranks and OMP threads to maximize throughput will depend on the queue time and how large your system is.
 You can change the settings from one submission to another until you find a good combination.
 
+Additional options can be given to the gromacs mdruns can be given through the `config.json` files with the options `mdrun_options_restrained`, `mdrun_options_swarms`, `mdrun_options_stereed`. In this way the performance can also be adjusted further. For example, if you have many available CPUs when the restrains simulations are being run `"mdrun_options_restrained": ["-ntomi","4"]` can help using these resources. 
+
 **Example**
 
 Assume that you want to run in parallel with `4` MPI rank and that you have `128` CPUs at your disposal. 
