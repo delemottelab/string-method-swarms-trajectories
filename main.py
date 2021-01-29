@@ -48,6 +48,7 @@ if __name__ == "__main__":
             """.format(VERSION)
         )
         args = parse_args()
+        args.iteration = max(args.iteration,1)
         conf = config.load_config(args.config_file)
         logger.setLevel(conf.log_level)
         run(conf, args.start_mode, args.iteration)
