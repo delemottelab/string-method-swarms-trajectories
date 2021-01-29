@@ -34,7 +34,7 @@ class CvValueExtractor(AbstractPostprocessor):
         return True
 
     def compute_cv_coordinates(self) -> np.array:
-        logger.info("Remeber to remove unfinished strings")
+        logger.info("Remember to remove unfinished strings")
         cv_coordinates = None
         for it in range(self.first_iteration, self.last_iteration + 1):
             iteration_md_dir = "{}/{}/*/s*/*xvg".format(
