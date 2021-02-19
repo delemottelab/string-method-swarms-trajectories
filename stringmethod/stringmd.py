@@ -185,36 +185,24 @@ class StringIterationRunner(object):
                     # Skip first column which contains the time and exclude any columns which come after the CVs
                     # This could be e.g. other restraints not part of the CV set
                     data = data[:, 1:(n_cvs + 1)]
-                    print("data")
-                    print(data)
                     if self.use_function:
                         data = custom_function(data)
-                    print("data")
-                    print(data)
                     if swarm_idx == 0:
                         # Set the actual start coordinates here, in case they differ from the reference values
                         # Can happen due to e.g. a too weak potential
                         drifted_string[point_idx] = data[0]
                     swarm_drift[swarm_idx] = data[-1] - drifted_string[point_idx]
-                    print("swarm_drift")
-                    print(swarm_drift)
                 drift = swarm_drift.mean(axis=0)
                 drifted_string[point_idx] += drift
-                print("drifted_string")
-                print(drifted_string)
         # scale CVs
         # This is required to emphasize both small scale and large scale displacements
         scaler = MinMaxScaler()
         scaled_string = scaler.fit_transform(drifted_string)
-        print("scaled_string")
-        print(scaled_string)
         # TODO better scaling, let user control it via config
         new_scaled_string = utils.reparametrize_path_iter(scaled_string,
                                                           # TODO compute arc weights based on transition between points
                                                           arclength_weight=None)
         new_string = scaler.inverse_transform(new_scaled_string)
-        print("new_scaled_string")
-        print(new_scaled_string)
         np.savetxt(self._get_string_filepath(self.iteration), new_string)
 
         # Compute convergence
