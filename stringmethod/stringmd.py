@@ -10,6 +10,7 @@ from gmx_jobs import *
 from stringmethod import utils
 from stringmethod.config import Config
 from stringmethod.utils.scaling import MinMaxScaler
+from stringmethod.utils.custom import custom_function
 from . import mpi
 
 
@@ -28,6 +29,7 @@ class StringIterationRunner(object):
     mdp_dir: Optional[str] = "mdp"
     mdrun_options_swarms: Optional[tuple] = None
     mdrun_options_restrained: Optional[tuple] = None
+    use_function: Optional[bool] = False
 
     def run(self):
 
@@ -183,6 +185,8 @@ class StringIterationRunner(object):
                     # Skip first column which contains the time and exclude any columns which come after the CVs
                     # This could be e.g. other restraints not part of the CV set
                     data = data[:, 1:(n_cvs + 1)]
+                    if self.use_function:
+                        data = custom_function(data)
                     if swarm_idx == 0:
                         # Set the actual start coordinates here, in case they differ from the reference values
                         # Can happen due to e.g. a too weak potential
@@ -241,5 +245,6 @@ class StringIterationRunner(object):
             topology_dir=config.topology_dir,
             mdrun_options_swarms=config.mdrun_options_swarms,
             mdrun_options_restrained=config.mdrun_options_restrained,
+            use_function=config.use_function,
             **kwargs
         )

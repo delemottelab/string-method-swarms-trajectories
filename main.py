@@ -19,7 +19,7 @@ def run(conf: config.Config, start_mode, iteration=1) -> None:
                                                        iteration=iteration,
                                                        append=start_mode == 'auto')
         r.run()
-        return run(conf, start_mode='postprocessing')
+        # return run(conf, start_mode='postprocessing')
     elif start_mode == 'steered':
         r = steeredmd.SteeredRunner.from_config(config=conf)
         r.run()

@@ -39,6 +39,8 @@ class Config(object):
     mdrun_options_swarms: Optional[tuple] = None 
     """gmx mdrun additional options for restrained simulations"""
     mdrun_options_restrained: Optional[tuple] = None 
+    """Use a function to combine cvs"""
+    use_function: Optional[bool] = False
     """
     Version of the software code, defined as stringmethod.version. 
     Might be used in the future to ensure backwards compatibility.
