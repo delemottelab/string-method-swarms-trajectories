@@ -59,7 +59,7 @@ class FreeEnergyCalculator(AbstractPostprocessor):
         fe = np.empty(self.probability_distribution.shape)
         for row_idx, p_row in enumerate(self.probability_distribution):
             for col_idx, p in enumerate(p_row):
-                if p is None or np.isnan(p) or p <= 1e-7:
+                if p is None or np.isnan(p): # or p <= 1e-7:
                     fe[row_idx, col_idx] = sys.float_info.max  # np.nan
                 else:
                     fe[row_idx, col_idx] = -self.kB * self.T * np.log(p)

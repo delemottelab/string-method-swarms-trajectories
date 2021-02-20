@@ -15,7 +15,7 @@ from stringmethod.config import Config
 class SteeredRunner(object):
     path: np.array = None
     mdp_file: Optional[str] = "steered.mdp"
-    start_coordinates: Optional[str] = "start.gro"
+    start_coordinates: Optional[str] = "topology/start.gro"
     md_dir: Optional[str] = "md"
     topology_dir: Optional[str] = "topology"
     steered_simulation_length_ps: Optional[float] = None

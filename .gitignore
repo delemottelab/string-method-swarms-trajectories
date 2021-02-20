@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.swp
 
 # C extensions
 *.so
@@ -142,3 +143,10 @@ examples/*/strings/*.png
 examples/*/*.png
 examples/*/*.svg
 examples/*/nohup.out
+examples/start-up/steered.err
+examples/start-up/steered.out
+examples/start-up/md/*
+!examples/start-up/md/.gitkeep
+examples/start-up/topology/index.ndx
+examples/start-up/strings/string0.txt
+examples/start-up/cv.pkl
