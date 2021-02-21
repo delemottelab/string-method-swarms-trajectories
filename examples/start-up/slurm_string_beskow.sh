@@ -74,7 +74,7 @@ cmd="mpiexec -n 257 `which python`  ${path_string_method_gmxapi}/main.py --confi
 echo $cmd
 $cmd
 err=$?
-if [ ! -f "confout.gro" ]; then
+if [   $err == 0 ]; then
     echo "canceled  $SLURM_ARRAY_JOB_ID"
     scancel $SLURM_ARRAY_JOB_ID
 fi
