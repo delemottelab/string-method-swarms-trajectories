@@ -16,7 +16,7 @@ You might want to use but not need strickly:
 + An anaconda installation.
 + If you have your own initial string from other simulations or your imagination:
   + A txt file with the string with `np.savetxt` format and shape (ncvs, nbeads): `strings/string0.txt`
-  + The starting beads of the first string: `md/0/0/restrained/confout.gro`, `md/0/1/restrained/confout.gro`, ... 
+  + The starting beads of the initial string: `md/0/0/restrained/confout.gro`, `md/0/1/restrained/confout.gro`, ... 
 
 Put these files in the directories specified above.
 
@@ -46,7 +46,7 @@ Unfortunatelly the steering simulation cannot be run with mpi-ranks, for this re
 Once you are happy with the set-up just send the job to queue
 
 ## Check the initial string and configs:
-Regardless if you have made the initial string yourself or with steering. You can use `analyze_steering.ipynb` to see the correspondance between the string and the initial configs.
+Regardless if you have made the initial string yourself or with steering. You can use `analyze_initial_string.ipynb` to see the correspondance between the `string0.txt` and the initial configs.
 
 ## Running String Simulation:
 At this point we are ready to start the string simulation. Go to the `slurm_string_method_beskow.sh` slurm file and edit it to adapt it to the your HPC environment since it is currently prepared for beskow (@DelemotteLab). This slurm script can be tailored easily for other CPU-based HPC environments. To choosed the number of mpi-processes make sure to check the main README.md's notes on parallelization.
