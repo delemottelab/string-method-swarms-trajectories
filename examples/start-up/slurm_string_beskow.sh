@@ -56,7 +56,6 @@ conda activate string_method
 # This code finds the last iteration done a feeds it to the string-method so it doesn't have to check every directory in md/ 
 
 iteration=$(ls -vd md/*|tail -n 1|sed  "s:md/\([0-9]*\):\1:")
-iteration=$((($iteration-1)))
 
 ######################  MODIFY ###############################
 
@@ -70,10 +69,12 @@ sed -i "s/\"max_iterations\": [0-9]*/\"max_iterations\": $max_iteration/" config
 
 # This number of parallel processes and number of nodes has been found to work well for 60-80k atoms in beskow (@DelemotteLab).
 # You can of course adapt it to your HPC environment following the guidelines of the main README.md
-cmd="mpiexec -n 257 `which python`  ../string-method-gmxapi/main.py --config_file=config.json --iteration=$iteration"
+iteration=$((($iteration-1)))
+cmd="mpiexec -n 257 `which python`  ${path_string_method_gmxapi}/main.py --config_file=config.json --iteration=$iteration"
 echo $cmd
 $cmd
 err=$?
 if [ ! -f "confout.gro" ]; then
-    scancel $SLURM_JOB_ID
+    echo "canceled  $SLURM_ARRAY_JOB_ID"
+    scancel $SLURM_ARRAY_JOB_ID
 fi
