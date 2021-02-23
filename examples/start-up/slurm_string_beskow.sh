@@ -17,7 +17,7 @@
 # If you want to do one iteration per slurm job (recomended) the 
 # time should greater than the time for one full iteration.
 
-#SBATCH -t 02:20:00
+#SBATCH -t 00:10:00
 
 # Total number of nodes and MPI tasks
 # This number of nodes and tasks has been found to work well for 60-80k atoms in beskow (@DelemotteLab).
@@ -51,7 +51,7 @@ else
     fi
 fi
 unset __conda_setup
-conda activate string_method
+conda activate string_method2
 
 # This code finds the last iteration done a feeds it to the string-method so it doesn't have to check every directory in md/ 
 
@@ -71,10 +71,11 @@ sed -i "s/\"max_iterations\": [0-9]*/\"max_iterations\": $max_iteration/" config
 # You can of course adapt it to your HPC environment following the guidelines of the main README.md
 iteration=$((($iteration-1)))
 cmd="mpiexec -n 257 `which python`  ${path_string_method_gmxapi}/main.py --config_file=config.json --iteration=$iteration"
+echo "Command Run:"
 echo $cmd
+
+echo "Started at:"
+date
 $cmd
-err=$?
-if [   $err != 0 ]; then
-    echo "canceled  $SLURM_ARRAY_JOB_ID"
-    scancel $SLURM_ARRAY_JOB_ID
-fi
+echo "Finished at:"
+date
