@@ -21,8 +21,10 @@ You might want to use but not need strickly:
 Put these files in the directories specified above.
 
 ## Geting started:
-First of all you need to install some python libraries. The most convenient way to do this is with anaconda3:
+First of all you need to install some python libraries. The most convenient way to do this is with anaconda3. Gromacs must be available on the path and to install gmxapi the environment variable `GMXTOOLCHAINDIR` must be set.
 ```bash
+# SUFFIX are the typical suffixes of gmx "_d", "_mpi" or "".
+export GMXTOOLCHAINDIR=/path/to/gromacs/share/cmake/gromacs${SUFFIX}
 conda env create -f environment.yml
 conda activate string_method
 # Optional if you want to visualize some strings.
