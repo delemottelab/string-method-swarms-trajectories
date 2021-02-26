@@ -17,7 +17,7 @@
 # If you want to do one iteration per slurm job (recomended) the 
 # time should greater than the time for one full iteration.
 
-#SBATCH -t 00:10:00
+#SBATCH -t 02:20:00
 
 # Total number of nodes and MPI tasks
 # This number of nodes and tasks has been found to work well for 60-80k atoms in beskow (@DelemotteLab).
