@@ -51,7 +51,7 @@ else
     fi
 fi
 unset __conda_setup
-conda activate string_method2
+conda activate string_method
 
 # This code finds the last iteration done a feeds it to the string-method so it doesn't have to check every directory in md/ 
 
