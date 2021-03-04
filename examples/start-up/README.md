@@ -68,4 +68,9 @@ squeue -u $USER
 ## Analyzing the results:
 You can use `analyze_strings.ipynb` to analyze the string-simulations as you go to check for convergence.
 
+## Tips and tricks
+For analysis you normally only need `strings/string*.txt` and once converged `md/*/*/s*/pullx.xvg`. So it might not be worth downloading all that data from the HPC cluster, but don't errase it since you might need it later.
+
 May convergence be with you!
+
+
