@@ -6,7 +6,7 @@
 #SBATCH -J my_string_simulation
 
 # Output file names for stdout and stderr
-#SBATCH -e string-%j-%A_%a.err -o string-%j-%A_%a.out
+#SBATCH -e string-%j-%a.err -o string-%j-%a.out
 
 ######################  MODIFY ###############################
 # Add your email below.
