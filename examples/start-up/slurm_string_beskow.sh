@@ -6,18 +6,18 @@
 #SBATCH -J my_string_simulation
 
 # Output file names for stdout and stderr
-#SBATCH -e string-%j-%a.err -o string-%j-%a.out
+#SBATCH -e string-%j-%A_%a.err -o string-%j-%A_%a.out
 
 ######################  MODIFY ###############################
 # Add your email below.
 # Receive e-mails when your job fails 
 
-#SBATCH --mail-user=anynomous@scilifelab.se --mail-type=FAIL
+#SBATCH --mail-user=sergiopc@kth.se --mail-type=ALL
 
 # If you want to do one iteration per slurm job (recomended) the 
 # time should greater than the time for one full iteration.
 
-#SBATCH -t 02:20:00
+#SBATCH -t 04:00:00
 
 # Total number of nodes and MPI tasks
 # This number of nodes and tasks has been found to work well for 60-80k atoms in beskow (@DelemotteLab).
