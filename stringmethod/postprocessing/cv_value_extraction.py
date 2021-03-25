@@ -37,13 +37,13 @@ class CvValueExtractor(AbstractPostprocessor):
         logger.info("Remember to remove unfinished strings")
         cv_coordinates = None
         for it in range(self.first_iteration, self.last_iteration + 1):
-            iteration_md_dir = "{}/{}/*/s*/*xvg".format(
-                self.md_dir,
-                it
-            )
+            iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
             xvg_files = glob.glob(iteration_md_dir)
             if len(xvg_files) == 0:
-                logger.info("No output files found for iteration %s. Not looking further", it)
+                logger.info(
+                    "No output files found for iteration %s. Not looking further",
+                    it,
+                )
                 return cv_coordinates
             values = None
             for file_idx, xf in enumerate(xvg_files):
@@ -62,4 +62,7 @@ class CvValueExtractor(AbstractPostprocessor):
         return cv_coordinates
 
     def _do_persist(self):
-        np.save("{}/cv_coordinates".format(self._get_out_dir()), self.cv_coordinates)
+        np.save(
+            "{}/cv_coordinates".format(self._get_out_dir()),
+            self.cv_coordinates,
+        )

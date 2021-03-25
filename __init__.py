@@ -1,1 +1,1 @@
-__all__ = ['stringmethod']
+__all__ = ["stringmethod"]

@@ -12,6 +12,7 @@ class ConfigError(Exception):
 @dataclass
 class Config(object):
     """Label for your simulation"""
+
     simu_id: Optional[str] = "string_simulation"
     """Input/output location for strings"""
     string_dir: Optional[str] = "strings"
@@ -34,11 +35,11 @@ class Config(object):
     """Steered MD start coordinates"""
     steered_md_start_coordinates: Optional[str] = "confout.gro"
     """gmx mdrun additional options for steered simulations"""
-    mdrun_options_steered: Optional[tuple] = None 
+    mdrun_options_steered: Optional[tuple] = None
     """gmx mdrun additional options for swarm simulations"""
-    mdrun_options_swarms: Optional[tuple] = None 
+    mdrun_options_swarms: Optional[tuple] = None
     """gmx mdrun additional options for restrained simulations"""
-    mdrun_options_restrained: Optional[tuple] = None 
+    mdrun_options_restrained: Optional[tuple] = None
     """Use a function to combine cvs"""
     use_function: Optional[bool] = False
     """
@@ -49,7 +50,7 @@ class Config(object):
     """
     Python log level for the stringmethod package
     """
-    log_level: Optional[str] = 'INFO'
+    log_level: Optional[str] = "INFO"
 
     def __post_init__(self):
         if self.version is None:

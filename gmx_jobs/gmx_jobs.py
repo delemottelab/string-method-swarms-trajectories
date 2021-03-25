@@ -58,9 +58,14 @@ class GmxMaster(object):
             for slave_return_data in self.work_queue.get_completed_work():
                 done, message = slave_return_data
                 if done:
-                    logger.debug('Master: slave finished its task with message "%s"', message)
+                    logger.debug(
+                        'Master: slave finished its task with message "%s"',
+                        message,
+                    )
                 else:
-                    raise JobFailedException("Slave failed job with message '%s'." % message)
+                    raise JobFailedException(
+                        "Slave failed job with message '%s'." % message
+                    )
             time.sleep(0.03)
 
 
@@ -79,19 +84,23 @@ class GmxSlave(Slave):
             if done:
                 logger.debug('Finished task with message "%s"', message)
             else:
-                raise JobFailedException("Slave failed job with message '%s'." % message)
+                raise JobFailedException(
+                    "Slave failed job with message '%s'." % message
+                )
 
     def do_work(self, task: Tuple[str, dict]):
         try:
             operation, args = task
-            logger.debug("slave performing operation %s with args %s", operation, args)
-            if operation == 'grompp':
+            logger.debug(
+                "slave performing operation %s with args %s", operation, args
+            )
+            if operation == "grompp":
                 mdtools.grompp(**args)
-            elif operation == 'mdrun':
+            elif operation == "mdrun":
                 mdtools.mdrun(**args)
             else:
-                raise ValueError('Unknown task operation {}'.format(operation))
-            return True, 'SUCCESS'
+                raise ValueError("Unknown task operation {}".format(operation))
+            return True, "SUCCESS"
         except Exception as ex:
             logger.exception(ex)
             return False, str(ex)

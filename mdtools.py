@@ -7,22 +7,27 @@ import numpy as np
 from stringmethod import logger
 
 
-def grompp(structure_file: str, mdp_file: str, topology_file: str, index_file: str, tpr_file: str,
-           mdp_output_file: str):
+def grompp(
+    structure_file: str,
+    mdp_file: str,
+    topology_file: str,
+    index_file: str,
+    tpr_file: str,
+    mdp_output_file: str,
+):
     input_files = {
-        '-n': index_file,
-        '-f': mdp_file,
-        '-p': topology_file,
-        '-c': structure_file,
+        "-n": index_file,
+        "-f": mdp_file,
+        "-p": topology_file,
+        "-c": structure_file,
     }
-    output_files = {
-        '-o': tpr_file,
-        '-po': mdp_output_file
-    }
-    prep = gmx.commandline_operation(executable="gmx",
-                                     arguments=["grompp"],
-                                     input_files=input_files,
-                                     output_files=output_files)
+    output_files = {"-o": tpr_file, "-po": mdp_output_file}
+    prep = gmx.commandline_operation(
+        executable="gmx",
+        arguments=["grompp"],
+        input_files=input_files,
+        output_files=output_files,
+    )
     prep.run()
     output = str(prep.output.erroroutput.result()).strip()
     if output:
@@ -36,21 +41,28 @@ def _move_all_files(src, dest):
         shutil.move(os.path.join(src, f), os.path.join(dest, f))
 
 
-def mdrun(output_dir: str, tpr_file: str, check_point_file: str = None, mdrun_options: list = None):
+def mdrun(
+    output_dir: str,
+    tpr_file: str,
+    check_point_file: str = None,
+    mdrun_options: list = None,
+):
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
-    input_files = {'-s': tpr_file}
+    input_files = {"-s": tpr_file}
     if check_point_file is not None:
-        input_files['-cpi'] = check_point_file
-    #SPC increased state printing to every 5 minutes since swarms are short
+        input_files["-cpi"] = check_point_file
+    # SPC increased state printing to every 5 minutes since swarms are short
     if mdrun_options == None:
         mdrun_options0 = []
     else:
         mdrun_options0 = mdrun_options
-    md = gmx.commandline_operation(executable="gmx",
-            arguments=["mdrun",'-cpt', '5'] + mdrun_options0,
-                                   input_files=input_files,
-                                   output_files={})
+    md = gmx.commandline_operation(
+        executable="gmx",
+        arguments=["mdrun", "-cpt", "5"] + mdrun_options0,
+        input_files=input_files,
+        output_files={},
+    )
     md.run()
     output = str(md.output.erroroutput.result()).strip()
     if output:
@@ -91,14 +103,18 @@ def load_xvg(file_name: str, usemask: bool = False) -> np.array:
         for line in f:
 
             if line.startswith("#"):
-                comments.append(line.rstrip('\n').lstrip('#').rstrip().lstrip())
+                comments.append(
+                    line.rstrip("\n").lstrip("#").rstrip().lstrip()
+                )
 
             if line.startswith(("@", "#")):
                 if not founddata:
                     nskip += 1
             else:
                 founddata = True
-    data = np.genfromtxt(file_name, skip_header=nskip, invalid_raise=True, usemask=usemask)
+    data = np.genfromtxt(
+        file_name, skip_header=nskip, invalid_raise=True, usemask=usemask
+    )
     if len(data) == 0:
         raise IOError("No data found in file " + file_name)
     return np.array(data)
