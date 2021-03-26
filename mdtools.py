@@ -60,7 +60,19 @@ def mdrun(
         mdrun_options0 = mdrun_options
     use_gpu = True
     if use_gpu:
-        mdrun_options0 += ["-gpu_id", f"{str(mpi_rank-1)}"]
+        number_threads = 6
+        mpi_rank = mpi_rank - 1
+        pin_offset = str(mpi_rank * number_threads)
+        mpi_rank = str(mpi_rank)
+        mdrun_options0 += ["-gpu_id", f"{mpi_rank}"]
+        mdrun_options0 += [
+            "-pin",
+            "on",
+            "-pinoffset",
+            f"{pin_offset}",
+            "-pinstride",
+            "1",
+        ]
     print(mdrun_options0)
     md = gmx.commandline_operation(
         executable="gmx",
