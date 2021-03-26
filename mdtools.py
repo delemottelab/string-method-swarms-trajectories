@@ -42,6 +42,7 @@ def _move_all_files(src, dest):
 
 
 def mdrun(
+    mpi_rank: int,
     output_dir: str,
     tpr_file: str,
     check_point_file: str = None,
@@ -57,6 +58,10 @@ def mdrun(
         mdrun_options0 = []
     else:
         mdrun_options0 = mdrun_options
+    use_gpu = True
+    if use_gpu:
+        mdrun_options0 += ["-gpu_id", f"{str(mpi_rank-1)}"]
+    print(mdrun_options0)
     md = gmx.commandline_operation(
         executable="gmx",
         arguments=["mdrun", "-cpt", "5"] + mdrun_options0,
@@ -103,9 +108,7 @@ def load_xvg(file_name: str, usemask: bool = False) -> np.array:
         for line in f:
 
             if line.startswith("#"):
-                comments.append(
-                    line.rstrip("\n").lstrip("#").rstrip().lstrip()
-                )
+                comments.append(line.rstrip("\n").lstrip("#").rstrip().lstrip())
 
             if line.startswith(("@", "#")):
                 if not founddata:

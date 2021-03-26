@@ -1,10 +1,10 @@
 import time
 from typing import List, Tuple
 
-from gmx_jobs.mpi_master_slave import WorkQueue, Master, Slave
-from gmx_jobs.mpi_master_slave.exceptions import JobFailedException
-from stringmethod import mpi, logger
 import mdtools
+from gmx_jobs.mpi_master_slave import Master, Slave, WorkQueue
+from gmx_jobs.mpi_master_slave.exceptions import JobFailedException
+from stringmethod import logger, mpi
 
 _instance = None
 
@@ -91,13 +91,11 @@ class GmxSlave(Slave):
     def do_work(self, task: Tuple[str, dict]):
         try:
             operation, args = task
-            logger.debug(
-                "slave performing operation %s with args %s", operation, args
-            )
+            logger.debug("slave performing operation %s with args %s", operation, args)
             if operation == "grompp":
                 mdtools.grompp(**args)
             elif operation == "mdrun":
-                mdtools.mdrun(**args)
+                mdtools.mdrun(mpi.rank, **args)
             else:
                 raise ValueError("Unknown task operation {}".format(operation))
             return True, "SUCCESS"
