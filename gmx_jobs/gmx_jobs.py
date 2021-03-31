@@ -91,7 +91,11 @@ class GmxSlave(Slave):
     def do_work(self, task: Tuple[str, dict]):
         try:
             operation, args = task
-            logger.debug("slave performing operation %s with args %s", operation, args)
+            logger.debug(
+                "slave performing operation %s with args %s",
+                operation,
+                args,
+            )
             if operation == "grompp":
                 mdtools.grompp(**args)
             elif operation == "mdrun":

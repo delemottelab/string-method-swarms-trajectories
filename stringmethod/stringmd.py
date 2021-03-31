@@ -2,15 +2,16 @@ import os
 import shutil
 from dataclasses import dataclass
 from os.path import abspath
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import numpy as np
 
 from gmx_jobs import *
 from stringmethod import utils
 from stringmethod.config import Config
-from stringmethod.utils.scaling import MinMaxScaler
 from stringmethod.utils.custom import custom_function
+from stringmethod.utils.scaling import MinMaxScaler
+
 from . import mpi
 
 
@@ -29,6 +30,7 @@ class StringIterationRunner(object):
     mdp_dir: Optional[str] = "mdp"
     mdrun_options_swarms: Optional[tuple] = None
     mdrun_options_restrained: Optional[tuple] = None
+    gpus_per_node: Optional[int] = None
     use_function: Optional[bool] = False
 
     def run(self):
@@ -47,14 +49,10 @@ class StringIterationRunner(object):
         if not os.path.exists(input_string_path):
             raise IOError("File %s does not exist" % input_string_path)
         self.string = np.loadtxt(input_string_path)
-        mpi.run_on_root_then_broadcast(
-            lambda: self._setup_dirs(), "iteration_init"
-        )
+        mpi.run_on_root_then_broadcast(lambda: self._setup_dirs(), "iteration_init")
 
     def _setup_dirs(self) -> bool:
-        logger.info(
-            "creating directories for string iteration %s ", self.iteration
-        )
+        logger.info("creating directories for string iteration %s ", self.iteration)
         os.makedirs("{}".format(self.string_dir), exist_ok=True)
         for point_idx in range(self.string.shape[0]):
             if self.fixed_endpoints and point_idx in [
@@ -62,9 +60,7 @@ class StringIterationRunner(object):
                 self.string.shape[0] - 1,
             ]:
                 continue
-            point_path = "{}/{}/{}/".format(
-                self.md_dir, self.iteration, point_idx
-            )
+            point_path = "{}/{}/{}/".format(self.md_dir, self.iteration, point_idx)
             os.makedirs(point_path + "restrained", exist_ok=True)
             for s in range(self.swarm_size):
                 os.makedirs("{}s{}".format(point_path, s), exist_ok=True)
@@ -81,9 +77,7 @@ class StringIterationRunner(object):
                     continue
                 string_restraints = dict()
                 for cv_idx, position in enumerate(point):
-                    string_restraints[
-                        "pull-coord{}-init".format(cv_idx + 1)
-                    ] = position
+                    string_restraints["pull-coord{}-init".format(cv_idx + 1)] = position
                 mdp_file = self._create_restrained_mdp_file(
                     point_idx, string_restraints
                 )
@@ -136,6 +130,7 @@ class StringIterationRunner(object):
                         tpr_file=tpr_file,
                         check_point_file=check_point_file,
                         mdrun_options=self.mdrun_options_restrained,
+                        gpus_per_node=self.gpus_per_node,
                     )
                     mdrun_tasks.append(("mdrun", mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="restrained_grompp")
@@ -166,12 +161,8 @@ class StringIterationRunner(object):
                     else:
                         grompp_args = dict(
                             mdp_file=mdp_file,
-                            index_file="{}/index.ndx".format(
-                                self.topology_dir
-                            ),
-                            topology_file="{}/topol.top".format(
-                                self.topology_dir
-                            ),
+                            index_file="{}/index.ndx".format(self.topology_dir),
+                            topology_file="{}/topol.top".format(self.topology_dir),
                             structure_file=abspath(
                                 "{}/{}/{}/restrained/confout.gro".format(
                                     self.md_dir, self.iteration, point_idx
@@ -182,9 +173,7 @@ class StringIterationRunner(object):
                         )
                         grompp_tasks.append(("grompp", grompp_args))
                     # Pick up checkpoint files if available
-                    check_point_file = abspath(
-                        "{}/state.cpt".format(output_dir)
-                    )
+                    check_point_file = abspath("{}/state.cpt".format(output_dir))
                     if not os.path.isfile(check_point_file):
                         check_point_file = None
                     mdrun_confout = "{}/confout.gro".format(output_dir)
@@ -200,6 +189,7 @@ class StringIterationRunner(object):
                             tpr_file=tpr_file,
                             check_point_file=check_point_file,
                             mdrun_options=self.mdrun_options_swarms,
+                            gpus_per_node=self.gpus_per_node,
                         )
                         mdrun_tasks.append(("mdrun", mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="swarms_grompp")
@@ -233,9 +223,7 @@ class StringIterationRunner(object):
                         # Set the actual start coordinates here, in case they differ from the reference values
                         # Can happen due to e.g. a too weak potential
                         drifted_string[point_idx] = data[0]
-                    swarm_drift[swarm_idx] = (
-                        data[-1] - drifted_string[point_idx]
-                    )
+                    swarm_drift[swarm_idx] = data[-1] - drifted_string[point_idx]
                 drift = swarm_drift.mean(axis=0)
                 drifted_string[point_idx] += drift
         # scale CVs
@@ -256,12 +244,10 @@ class StringIterationRunner(object):
         # To handle that you need to compute your own metric. See the alanine dipeptide example
         scaled_current_string = scaler.transform(self.string)
         mean_norm = (
-            np.linalg.norm(new_scaled_string)
-            + np.linalg.norm(scaled_current_string)
+            np.linalg.norm(new_scaled_string) + np.linalg.norm(scaled_current_string)
         ) / 2
         convergence = (
-            np.linalg.norm(new_scaled_string - scaled_current_string)
-            / mean_norm
+            np.linalg.norm(new_scaled_string - scaled_current_string) / mean_norm
         )
         logger.info(
             "Convergence between iteration %s and %s: %s",
@@ -278,12 +264,12 @@ class StringIterationRunner(object):
         self, point_idx: int, string_restraints: Dict[str, Any]
     ) -> str:
         # TODO use gmxapi#mdrun#override_input when it supports supports pull-coord1-init
-        mdp_template_file = abspath(
-            "{}/{}".format(self.mdp_dir, "restrained.mdp")
-        )
+        mdp_template_file = abspath("{}/{}".format(self.mdp_dir, "restrained.mdp"))
         mdp_file = abspath(
             "{}/{}/{}/restrained/restrained.mdp".format(
-                self.md_dir, self.iteration, point_idx,
+                self.md_dir,
+                self.iteration,
+                point_idx,
             )
         )
         shutil.copy(mdp_template_file, mdp_file)
@@ -308,6 +294,7 @@ class StringIterationRunner(object):
             topology_dir=config.topology_dir,
             mdrun_options_swarms=config.mdrun_options_swarms,
             mdrun_options_restrained=config.mdrun_options_restrained,
+            gpus_per_node=config.gpus_per_node,
             use_function=config.use_function,
             **kwargs
         )

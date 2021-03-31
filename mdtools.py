@@ -47,37 +47,42 @@ def mdrun(
     tpr_file: str,
     check_point_file: str = None,
     mdrun_options: list = None,
+    gpus_per_node: int = None,
 ):
+    mpi_rank = mpi_rank - 1
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
     input_files = {"-s": tpr_file}
     if check_point_file is not None:
         input_files["-cpi"] = check_point_file
     # SPC increased state printing to every 5 minutes since swarms are short
-    if mdrun_options == None:
-        mdrun_options0 = []
+    if mdrun_options is None:
+        mdrun_options_parse = []
     else:
-        mdrun_options0 = mdrun_options
-    use_gpu = True
-    if use_gpu:
-        gpus_per_node = 2
-        number_threads = 6
-        mpi_rank = mpi_rank - 1
-        pin_offset = str(mpi_rank * number_threads)
+        mdrun_options_parse = mdrun_options
+
+    # Search for -nt number of threads option in mdrun_options.
+    for i, o in enumerate(mdrun_options):
+        if o == "-nt":
+            number_threads = int(mdrun_options[i + 1])
+            pin_offset = str(mpi_rank * number_threads)
+            mdrun_options_parse += [
+                "-pin",
+                "on",
+                "-pinoffset",
+                f"{pin_offset}",
+                "-pinstride",
+                "1",
+            ]
+            break
+
+    if gpus_per_node is not None:
         mpi_rank = str(mpi_rank % gpus_per_node)
-        mdrun_options0 += ["-gpu_id", f"{mpi_rank}"]
-        mdrun_options0 += [
-            "-pin",
-            "on",
-            "-pinoffset",
-            f"{pin_offset}",
-            "-pinstride",
-            "1",
-        ]
-    print(mdrun_options0)
+        mdrun_options_parse += ["-gpu_id", f"{mpi_rank}"]
+
     md = gmx.commandline_operation(
         executable="gmx",
-        arguments=["mdrun", "-cpt", "5"] + mdrun_options0,
+        arguments=["mdrun", "-cpt", "5"] + mdrun_options_parse,
         input_files=input_files,
         output_files={},
     )
