@@ -10,7 +10,9 @@ class AbstractPostprocessor(object):
     postprocessing_dir: str
 
     def run(self):
-        mpi.run_on_root_then_broadcast(lambda: self._do_run(), self.__class__.__name__)
+        mpi.run_on_root_then_broadcast(
+            lambda: self._do_run(), self.__class__.__name__
+        )
 
     def _do_run(self) -> bool:
         pass

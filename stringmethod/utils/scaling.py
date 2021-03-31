@@ -14,6 +14,7 @@ class MinMaxScaler(object):
     Class mimicking sklearn's MinMaxScaler
     Used for normalizing the string
     """
+
     _scale: Optional[np.array] = None
     _offset: Optional[np.array] = None
 
