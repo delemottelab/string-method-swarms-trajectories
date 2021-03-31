@@ -1,17 +1,18 @@
-__all__=['WorkQueue']
+__all__ = ["WorkQueue"]
 
-__author__='Luca Scarabello'
+__author__ = "Luca Scarabello"
+
 
 class WorkQueue:
     """
     Handle a work queue on a particular Master
     """
-   
+
     def __init__(self, master):
         self.master = master
-        self.work_queue           = []
+        self.work_queue = []
         self.resources_work_queue = {}
-        self.slave_resources      = {}
+        self.slave_resources = {}
 
     def done(self):
         """
@@ -39,7 +40,7 @@ class WorkQueue:
         # give work to do to each idle slave
         #
         for slave in self.master.get_ready_slaves():
-            
+
             # get next task in the queue
             data, resource_id = self.__get_data_for_slave(slave)
             if data is None:
@@ -56,7 +57,6 @@ class WorkQueue:
         """
         for slave in self.master.get_completed_slaves():
             yield self.master.get_data(slave)
-
 
     def __work_queues_empty(self):
         """
@@ -107,7 +107,9 @@ class WorkQueue:
             return None, None
 
         resources_to_process = set(self.resources_work_queue.keys())
-        not_assigned_resources = resources_to_process - set(self.slave_resources.values())
+        not_assigned_resources = resources_to_process - set(
+            self.slave_resources.values()
+        )
 
         resource_id = self.slave_resources.get(slave)
         data = None
@@ -117,7 +119,7 @@ class WorkQueue:
         # a resource already assigned.
         #
         if resource_id is not None:
-            data = self.__pop_data(resource_id)        
+            data = self.__pop_data(resource_id)
 
         #
         # Try to fetch next task from the work queue without resources
@@ -128,7 +130,7 @@ class WorkQueue:
 
         #
         # Try to assign this slave to a resource nobody else is using
-        #        
+        #
         if data is None:
             if not_assigned_resources:
                 resource_id = next(iter(not_assigned_resources))
@@ -136,11 +138,10 @@ class WorkQueue:
 
         #
         # Finally, assign this slave to a resource in use by other slaves
-        #        
+        #
         if data is None:
             if resources_to_process:
                 resource_id = next(iter(resources_to_process))
                 data = self.__pop_data(resource_id)
-   
-        return data, resource_id
 
+        return data, resource_id

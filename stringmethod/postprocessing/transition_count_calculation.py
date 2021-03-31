@@ -13,6 +13,7 @@ class TransitionCountCalculator(AbstractPostprocessor):
     """
     Takes CV input output values, discretizes the CV space and computes the transition count between bins
     """
+
     """
     Input from previous step. 
     First index corresponds to a trajectory.
@@ -30,7 +31,10 @@ class TransitionCountCalculator(AbstractPostprocessor):
         if len(self.cv_coordinates.shape) < 3:
             # A single CV, just add an extra dimension
             self.cv_coordinates = self.cv_coordinates[:, :, np.newaxis]
-        self._index_converter = IndexConverter(n_dim=self.cv_coordinates.shape[2], n_grid_points=self.n_grid_points)
+        self._index_converter = IndexConverter(
+            n_dim=self.cv_coordinates.shape[2],
+            n_grid_points=self.n_grid_points,
+        )
 
     def _do_run(self) -> bool:
         self.grid = self.setup_grid()
@@ -38,7 +42,10 @@ class TransitionCountCalculator(AbstractPostprocessor):
         return True
 
     def _do_persist(self):
-        np.save("{}/transition_count".format(self._get_out_dir()), self.transition_count)
+        np.save(
+            "{}/transition_count".format(self._get_out_dir()),
+            self.transition_count,
+        )
         np.save("{}/grid".format(self._get_out_dir()), self.grid)
 
     def setup_grid(self) -> np.array:
@@ -46,7 +53,9 @@ class TransitionCountCalculator(AbstractPostprocessor):
         grid = np.empty((self.n_grid_points, n_cvs))
         for cv in range(n_cvs):
             vals = self.cv_coordinates[:, :, cv]
-            grid[:, cv] = np.linspace(vals.min(), vals.max(), self.n_grid_points)
+            grid[:, cv] = np.linspace(
+                vals.min(), vals.max(), self.n_grid_points
+            )
         return grid
 
     def compute_transition_count(self) -> np.array:
@@ -65,7 +74,9 @@ class TransitionCountCalculator(AbstractPostprocessor):
         return transition_count
 
     def _find_grid_coordinates(self, cv_values: np.array):
-        return np.array([
-            (np.abs(cv_values[cv_idx] - self.grid[:, cv_idx])).argmin()
-            for cv_idx in range(self.grid.shape[1])
-        ])
+        return np.array(
+            [
+                (np.abs(cv_values[cv_idx] - self.grid[:, cv_idx])).argmin()
+                for cv_idx in range(self.grid.shape[1])
+            ]
+        )

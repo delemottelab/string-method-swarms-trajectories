@@ -9,22 +9,22 @@ from stringmethod.postprocessing import *
 from matplotlib import colors
 
 
-def show(grid: np.array,
-         free_energy: np.array,
-         fe_cut_off: float = 10):
+def show(grid: np.array, free_energy: np.array, fe_cut_off: float = 10):
     free_energy[free_energy > fe_cut_off] = np.nan
     phi = grid[:, 0]
     if free_energy.shape[1] == 1:
-        plt.plot(phi, free_energy, '--o')
+        plt.plot(phi, free_energy, "--o")
         plt.ylabel("Free Energy [kcal/mol]")
     else:
         psi = grid[:, 1]
-        im = plt.contourf(phi,
-                          psi,
-                          free_energy.T,  # TODO should we take the transform of the matrix or not?
-                          levels=20,
-                          norm=colors.PowerNorm(gamma=1 / 3),
-                          cmap=plt.cm.rainbow)
+        im = plt.contourf(
+            phi,
+            psi,
+            free_energy.T,  # TODO should we take the transform of the matrix or not?
+            levels=20,
+            norm=colors.PowerNorm(gamma=1 / 3),
+            cmap=plt.cm.rainbow,
+        )
         cbar = plt.colorbar(im)
         cbar.set_label("[kcal/mol]")
         plt.xlabel("$\phi$ [degrees]")
@@ -34,7 +34,9 @@ def show(grid: np.array,
     plt.show()
 
 
-def handle_periodicity(cv_coordinates: np.array, dpca: bool = False) -> np.array:
+def handle_periodicity(
+    cv_coordinates: np.array, dpca: bool = False
+) -> np.array:
     """
     (Optional method)
     Handle periodic boundary conditions by taking modules 2pi or performing dihedral-PCA
@@ -47,7 +49,10 @@ def handle_periodicity(cv_coordinates: np.array, dpca: bool = False) -> np.array
     cv_coordinates = (offset + cv_coordinates) % (2 * np.pi)
     if dpca:
         from sklearn.decomposition import PCA
-        new_coords = np.empty((len(cv_coordinates), cv_coordinates.shape[1], 4))
+
+        new_coords = np.empty(
+            (len(cv_coordinates), cv_coordinates.shape[1], 4)
+        )
         new_coords[:, :, 0] = np.sin(cv_coordinates[:, :, 0])
         new_coords[:, :, 1] = np.cos(cv_coordinates[:, :, 0])
         new_coords[:, :, 2] = np.sin(cv_coordinates[:, :, 1])
@@ -66,7 +71,7 @@ def compute():
     ce = CvValueExtractor.from_config(
         config=config,
         # last_iteration=150,
-        first_iteration=10  # Exclude the first iterations to let the system equilibrate.
+        first_iteration=10,  # Exclude the first iterations to let the system equilibrate.
     )
     ce.run()
     ce.persist()
@@ -79,16 +84,18 @@ def compute():
 
     # Uncomment to only select one CV
     # cv_coordinates = cv_coordinates[:, :, 0]
-    tc = TransitionCountCalculator.from_config(config=config,
-                                               # You probably want to play around with n_grid_points.
-                                               # It sets the resolution. Its optimal value depends on your swarm trajectory length and sample size
-                                               n_grid_points=13,
-                                               cv_coordinates=cv_coordinates)
+    tc = TransitionCountCalculator.from_config(
+        config=config,
+        # You probably want to play around with n_grid_points.
+        # It sets the resolution. Its optimal value depends on your swarm trajectory length and sample size
+        n_grid_points=13,
+        cv_coordinates=cv_coordinates,
+    )
     tc.run()
     tc.persist()
-    fc = FreeEnergyCalculator.from_config(config=config,
-                                          grid=tc.grid,
-                                          transition_count=tc.transition_count)
+    fc = FreeEnergyCalculator.from_config(
+        config=config, grid=tc.grid, transition_count=tc.transition_count
+    )
     fc.run()
     fc.persist()
     return tc.grid, fc.free_energy

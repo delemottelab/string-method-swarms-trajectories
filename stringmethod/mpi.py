@@ -22,7 +22,7 @@ def run_on_root_then_broadcast(func: Callable, step: str):
         except Exception as ex:
             logger.exception(ex)
             success = False
-            data['message'] = str(ex)
+            data["message"] = str(ex)
         data[step] = success
     else:
         # Wait for root to do work

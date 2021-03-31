@@ -1,13 +1,14 @@
 from gmx_jobs.mpi_master_slave import WorkQueue
 
-__all__=['MultiWorkQueue']
-__author__ = 'Luca Scarabello'
+__all__ = ["MultiWorkQueue"]
+__author__ = "Luca Scarabello"
+
 
 class MultiWorkQueue:
     """
     Handle multiple work queues
     """
-       
+
     def __init__(self, slaves, masters_details):
         self.slaves = list(slaves)
         self.work_queue = {}
@@ -23,10 +24,9 @@ class MultiWorkQueue:
                 if not slaves:
                     break
                 num_slaves = self.num_slaves[task_id]
-                master     = work_queue.master
+                master = work_queue.master
                 if num_slaves is None or master.num_slaves() < num_slaves:
-                    master.add_slave(slaves.pop(0), ready=True)                    
-                    
+                    master.add_slave(slaves.pop(0), ready=True)
 
     def done(self):
         for work_queue in self.work_queue.values():
@@ -42,7 +42,7 @@ class MultiWorkQueue:
         for id, work_queue in self.work_queue.items():
 
             num_slaves = self.num_slaves[id]
-            master     = work_queue.master
+            master = work_queue.master
 
             if not work_queue.done():
                 #
@@ -51,7 +51,7 @@ class MultiWorkQueue:
                 #
                 if num_slaves is not None and master.num_slaves() < num_slaves:
                     self.__borrow_a_slave(id, master)
-    
+
                 work_queue.do_work()
 
             else:
@@ -68,7 +68,7 @@ class MultiWorkQueue:
         """
         for other_id, other_work_queue in self.work_queue.items():
             if other_id == id:
-                continue   
+                continue
             other_num_slaves = self.num_slaves[other_id]
             if other_work_queue.done() or other_num_slaves is None:
                 other_work_queue.master.move_slave(to_master=master)
@@ -89,11 +89,12 @@ class MultiWorkQueue:
             # or doesn't have slaves limit
             #
             other_num_slaves = self.num_slaves[other_id]
-            if other_num_slaves is None or \
-               other_work_queue.master.num_slaves() < other_num_slaves:
+            if (
+                other_num_slaves is None
+                or other_work_queue.master.num_slaves() < other_num_slaves
+            ):
                 master.move_slave(to_master=other_work_queue.master)
                 break
 
     def get_completed_work(self, task_id):
         return self.work_queue[task_id].get_completed_work()
-
