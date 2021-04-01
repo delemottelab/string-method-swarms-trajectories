@@ -49,7 +49,7 @@ def mdrun(
     mdrun_options: list = None,
     gpus_per_node: int = None,
 ):
-    mpi_rank = mpi_rank - 1
+    mpi_rank = max(mpi_rank - 1, 0)
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
     input_files = {"-s": tpr_file}
