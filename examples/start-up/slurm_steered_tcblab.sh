@@ -3,30 +3,33 @@
 ######################  MODIFY FOR YOUR HPC ###############################
 
 # Submit to the tcb partition
-#SBATCH -p tcb
+#SBATCH --partition=tcb
 
 # The name of the job in the queue
-#SBATCH -J steered
+#SBATCH --job-name=steered
 # wall-clock time given to this job
-#SBATCH -t 23:30:00
+#SBATCH --time=23:30:00
 
-# Number of nodes and number of MPI processes per node
-#SBATCH -N 1 -n 8 
-# Request a GPU node and two GPUs (per node)
-# Remove if you don't need a GPU
-#SBATCH -C gpu --gres=gpu:1 -x gpu04
+# Number of nodes and number of MPI tasks per node
+#SBATCH --nodes=1
+# In slurm jargon tasks is like MPI-ranks
+#SBATCH --ntasks-per-node=8
+# Constraint is the "queue" you choose for slurm.
+# In this case choose the gpu queue
+#SBATCH --constraint=gpu
+# gres requests particular generic consumable resources
+# in this case 1 gpu per node
+#SBATCH --gres=gpu:1
 
 # Output file names for stdout and stderr
-#SBATCH -e steered.err
-#SBATCH -o steered.out
+#SBATCH --error=steered.err
+#SBATCH --output=steered.out
 
-
-
-######################  MODIFY ###############################
 # Add your email below.
-# Receive e-mails when your job fails 
+# Receive e-mails when your job fails
 
-#SBATCH --mail-user=anynomous@scilifelab.se --mail-type=FAIL
+#SBATCH --mail-user=anynomous@scilifelab.se
+#SBATCH --mail-type=FAIL
 
 # Choose version of gromacs
 module unload gromacs
