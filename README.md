@@ -192,6 +192,8 @@ You can also change the location of the input/output directories.
  Same as mdrun_options_stereed but for swarm simulations.
 + mdrun_options_restrained=list_of_strings (default: [ ] ).
  Same as mdrun_options_stereed but for restrained simulations.
++ gpus_per_node=int (default: None). Number of GPUs per node. If more than one
+node is used all nodes must have the same number of GPUs.
 
 ## Running a string simulation
 
