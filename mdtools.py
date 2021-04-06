@@ -59,7 +59,7 @@ def mdrun(
     if mdrun_options is None:
         mdrun_options_parse = []
     else:
-        mdrun_options_parse = mdrun_options
+        mdrun_options_parse = mdrun_options[:]
 
     # Search for -nt number of threads option in mdrun_options.
     for i, o in enumerate(mdrun_options):
