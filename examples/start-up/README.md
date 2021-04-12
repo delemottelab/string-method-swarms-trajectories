@@ -39,16 +39,18 @@ configurations can also be generated from steering simulations.
 
 First of all you need to install some python libraries. The most convenient way
 to do this is with anaconda3. Gromacs must be available on the path and to
-install gmxapi the environment variable `GMXTOOLCHAINDIR` must be set.
+install gmxapi the environment variable `GMXTOOLCHAINDIR` must be set. gmxapi
+can be tricky to install sometimes, but their developers are very nice and
+can answer your issues in their [github](https://github.com/kassonlab/gmxapi/issues).
+Getting nglview to work can be tricky too but it is not necessary to use, it
+just to visualize things in the notebook. You can always use alternitavelly some
+other visualization software.
 
 ```bash
 # SUFFIX are the typical suffixes of gmx "_d", "_mpi" or "".
 export GMXTOOLCHAINDIR=/path/to/gromacs/share/cmake/gromacs${SUFFIX}
 conda env create -f environment.yml
 conda activate string_method
-# Optional if you want to visualize some strings.
-jupyter labextension install nglview-js-widgets@2.7.7
-jupyter-labextension install @jupyter-widgets/jupyterlab-manager
 ```
 
 This command will create an environment called `string_method` with all the
