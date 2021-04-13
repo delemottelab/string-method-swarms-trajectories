@@ -37,8 +37,8 @@ To launch a simulation you first need to set up a system (start.gro, topol.top,
 index.ndx), configure Collective Variables (CVs; a.k.a reaction coordinates)
 with GROMACS' pull code (restrained.mdp, swarms.mdp, steered.mdp), and provide
 an initial string (string0.txt).
-We recommend you to use one of the [examples below](#examples) as a template.
-There is also a [start-up](#examples/start-up/) walks you through file preparation,
+We recommend you to use one of the [examples below](examples) as a template.
+There is also a [start-up](examples/start-up/) walks you through file preparation,
  steering simulations, running of the string method and analysis using jupyter
  notebooks and instructions.
 
@@ -169,7 +169,7 @@ simulation_directory
 As the program progresses it will create new directories in the **md** directory, one new directory for every string iterations.
 At the end of every iteration, it will output new string coordinates **strings/string1.txt**, **strings/string2.txt**", etc.
 
-We know it requires some effort to get started, but the [start-up](#examples/start-up/)
+We know it requires some effort to get started, but the [start-up](examples/start-up/)
 should make it much easier for you.
 
 ### config.json (optional)
@@ -236,8 +236,8 @@ simulation running per GPU in parallel each with one GPU, one mpi-rank and as ma
 threads as you can distribute per mpi rank.
 
 To see details on the parallelization and performance enhancement of the string
-method please read in detail [PERFORMANCE.md](#PERFORMANCE.md). You also have
-slurm script files in [start-up](#examples/start-up/).
+method please read in detail [PERFORMANCE.md](PERFORMANCE.md). You also have
+slurm script files in [start-up](examples/start-up/).
 
 ### Handling restarts
 
