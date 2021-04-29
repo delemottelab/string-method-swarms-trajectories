@@ -29,7 +29,9 @@ linked to [GROMACS](http://manual.gromacs.org/).
 We plan on automating dependency management with pip or conda.
 
 The environment.yml contains library versions for which the package has been
-tested. The package has been tested with GROMACS2020.2.
+tested. The package has been tested with GROMACS2020.2. It's important to note that
+the string-method will use the `gmx` excecutable of gromacs and not the `gmx_mpi` compiled
+version which may produce errors.
 
 ## Preparing the files
 
