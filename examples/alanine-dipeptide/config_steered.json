@@ -1,0 +1,9 @@
+{
+  "simu_id": "GPCR Steering",
+  "version": "0.0.0",
+  "log_level": "DEBUG",
+  "fixed_endpoints": "true",
+  "steered_md_target_path": "strings/string0_radians.txt",
+  "use_plumed": "true",
+  "use_api": "false"
+}

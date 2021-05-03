@@ -1,7 +1,11 @@
 import os
 import shutil
+from subprocess import run, PIPE
 
-import gmxapi as gmx
+try:
+    import gmxapi as gmx
+except:
+    pass
 import numpy as np
 
 from stringmethod import logger
@@ -14,6 +18,7 @@ def grompp(
     index_file: str,
     tpr_file: str,
     mdp_output_file: str,
+    use_api: bool = True
 ):
     input_files = {
         "-n": index_file,
@@ -22,17 +27,22 @@ def grompp(
         "-c": structure_file,
     }
     output_files = {"-o": tpr_file, "-po": mdp_output_file}
-    prep = gmx.commandline_operation(
-        executable="gmx",
-        arguments=["grompp"],
-        input_files=input_files,
-        output_files=output_files,
-    )
-    prep.run()
-    output = str(prep.output.erroroutput.result()).strip()
+    if use_api:
+        prep = gmx.commandline_operation(
+            executable="gmx",
+            arguments=["grompp"],
+            input_files=input_files,
+            output_files=output_files,
+        )
+        prep.run()
+        output = str(prep.output.erroroutput.result()).strip()
+    else:
+        infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
+        outfiles = ' '.join([k + ' ' + v for k, v in output_files.items()])
+        result = run(f"gmx grompp {infiles} {outfiles}", stdout=PIPE, stderr=PIPE, shell=True)
+        output = result.stderr
     if output:
         logger.info("grompp output:\n%s", output)
-    return prep
 
 
 def _move_all_files(src, dest):
@@ -48,46 +58,57 @@ def mdrun(
     check_point_file: str = None,
     mdrun_options: list = None,
     gpus_per_node: int = None,
+    plumed_file: str = None,
+    use_api: bool = True
 ):
-    mpi_rank = max(mpi_rank - 1, 0)
+    mpi_rank = mpi_rank - 1
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
     input_files = {"-s": tpr_file}
     if check_point_file is not None:
         input_files["-cpi"] = check_point_file
+    if plumed_file is not None:
+        input_files["-plumed"] = plumed_file
     # SPC increased state printing to every 5 minutes since swarms are short
-    if mdrun_options is None:
+    if mdrun_options is None:  # TODO
         mdrun_options_parse = []
     else:
-        mdrun_options_parse = mdrun_options[:]
+        mdrun_options_parse = mdrun_options
 
     # Search for -nt number of threads option in mdrun_options.
-    for i, o in enumerate(mdrun_options):
-        if o == "-nt":
-            number_threads = int(mdrun_options[i + 1])
-            pin_offset = str(mpi_rank * number_threads)
-            mdrun_options_parse += [
-                "-pin",
-                "on",
-                "-pinoffset",
-                f"{pin_offset}",
-                "-pinstride",
-                "1",
-            ]
-            break
+    if mdrun_options is not None:
+        for i, o in enumerate(mdrun_options):
+            if o == "-nt":
+                number_threads = int(mdrun_options[i + 1])
+                pin_offset = str(mpi_rank * number_threads)
+                mdrun_options_parse += [
+                    "-pin",
+                    "on",
+                    "-pinoffset",
+                    f"{pin_offset}",
+                    "-pinstride",
+                    "1",
+                ]
+                break
 
     if gpus_per_node is not None:
         mpi_rank = str(mpi_rank % gpus_per_node)
         mdrun_options_parse += ["-gpu_id", f"{mpi_rank}"]
 
-    md = gmx.commandline_operation(
-        executable="gmx",
-        arguments=["mdrun", "-cpt", "5"] + mdrun_options_parse,
-        input_files=input_files,
-        output_files={},
-    )
-    md.run()
-    output = str(md.output.erroroutput.result()).strip()
+    if use_api:
+        md = gmx.commandline_operation(
+            executable="gmx",
+            arguments=["mdrun", "-cpt", "5"] + mdrun_options_parse,
+            input_files=input_files,
+            output_files={},
+        )
+        md.run()
+        output = str(md.output.erroroutput.result()).strip()
+    else:
+        infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
+        options = ' '.join(mdrun_options_parse)
+        result = run(f"gmx mdrun -cpt 5 {infiles} {options}", stdout=PIPE, stderr=PIPE, shell=True)
+        output = result.stderr
     if output:
         logger.info("mdrun output:\n%s", output)
     os.chdir(cwd)
@@ -98,7 +119,6 @@ def mdrun(
     # path = path[:path.rfind("/") + 1]
     # _move_all_files(path, output_dir)
     # os.removedirs(path)
-    return md
 
 
 def load_xvg(file_name: str, usemask: bool = False) -> np.array:

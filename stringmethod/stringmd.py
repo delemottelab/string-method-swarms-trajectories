@@ -32,6 +32,8 @@ class StringIterationRunner(object):
     mdrun_options_restrained: Optional[tuple] = None
     gpus_per_node: Optional[int] = None
     use_function: Optional[bool] = False
+    use_plumed: Optional[bool] = False
+    use_api: Optional[bool] = True
 
     def run(self):
 
@@ -81,6 +83,12 @@ class StringIterationRunner(object):
                 mdp_file = self._create_restrained_mdp_file(
                     point_idx, string_restraints
                 )
+                if self.use_plumed:
+                    plumed_file = self._create_restrained_plumed_file(
+                        point_idx, string_restraints
+                    )
+                else:
+                    plumed_file = None
                 output_dir = abspath(
                     "{}/{}/{}/restrained/".format(
                         self.md_dir, self.iteration, point_idx
@@ -111,6 +119,7 @@ class StringIterationRunner(object):
                         structure_file=in_file,
                         tpr_file=tpr_file,
                         mdp_output_file="{}/mdout.mdp".format(output_dir),
+                        use_api=self.use_api
                     )
                     grompp_tasks.append(("grompp", grompp_args))
                 # SPC Pick up checkpoint files if available
@@ -131,6 +140,8 @@ class StringIterationRunner(object):
                         check_point_file=check_point_file,
                         mdrun_options=self.mdrun_options_restrained,
                         gpus_per_node=self.gpus_per_node,
+                        plumed_file=plumed_file,
+                        use_api=self.use_api
                     )
                     mdrun_tasks.append(("mdrun", mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="restrained_grompp")
@@ -147,6 +158,12 @@ class StringIterationRunner(object):
                     continue
                 for swarm_idx in range(self.swarm_size):
                     mdp_file = abspath("{}/swarms.mdp".format(self.mdp_dir))
+                    if self.use_plumed:
+                        plumed_file = self._create_restrained_plumed_file(
+                            point_idx, {}
+                        )
+                    else:
+                        plumed_file = None
                     output_dir = abspath(
                         "{}/{}/{}/s{}/".format(
                             self.md_dir, self.iteration, point_idx, swarm_idx
@@ -170,6 +187,7 @@ class StringIterationRunner(object):
                             ),
                             tpr_file=tpr_file,
                             mdp_output_file="{}/mdout.mdp".format(output_dir),
+                            use_api=self.use_api
                         )
                         grompp_tasks.append(("grompp", grompp_args))
                     # Pick up checkpoint files if available
@@ -190,6 +208,8 @@ class StringIterationRunner(object):
                             check_point_file=check_point_file,
                             mdrun_options=self.mdrun_options_swarms,
                             gpus_per_node=self.gpus_per_node,
+                            plumed_file=plumed_file,
+                            use_api=self.use_api
                         )
                         mdrun_tasks.append(("mdrun", mdrun_args))
         gmx_jobs.submit(tasks=grompp_tasks, step="swarms_grompp")
@@ -212,11 +232,15 @@ class StringIterationRunner(object):
                             self.md_dir, self.iteration, point_idx, swarm_idx
                         )
                     )
-                    pull_xvg_out = "{}/pullx.xvg".format(output_dir)
-                    data = mdtools.load_xvg(file_name=pull_xvg_out)
-                    # Skip first column which contains the time and exclude any columns which come after the CVs
-                    # This could be e.g. other restraints not part of the CV set
-                    data = data[:, 1 : (n_cvs + 1)]
+                    if not self.use_plumed:
+                        pull_xvg_out = "{}/pullx.xvg".format(output_dir)
+                        data = mdtools.load_xvg(file_name=pull_xvg_out)
+                        # Skip first column which contains the time and exclude any columns which come after the CVs
+                        # This could be e.g. other restraints not part of the CV set
+                    else:
+                        pull_out = "{}/colvar".format(output_dir)
+                        data = np.loadtxt(pull_out)
+                    data = data[:, 1: (n_cvs + 1)]
                     if self.use_function:
                         data = custom_function(data)
                     if swarm_idx == 0:
@@ -273,13 +297,44 @@ class StringIterationRunner(object):
             )
         )
         shutil.copy(mdp_template_file, mdp_file)
-        with open(mdp_file, "a") as f:
-            f.write(
-                "\n\n;--------automatically injected properties from python below----\n\n"
-            )
-            for k, v in string_restraints.items():
-                f.write("{}={}\n".format(k, v))
+        if not self.use_plumed:
+            with open(mdp_file, "a") as f:
+                f.write(
+                    "\n\n;--------automatically injected properties from python below----\n\n"
+                )
+                for k, v in string_restraints.items():
+                    f.write("{}={}\n".format(k, v))
         return mdp_file
+
+    def _create_restrained_plumed_file(
+            self, point_idx: int, string_restraints: Dict[str, Any]
+    ) -> str:
+        plumed_template_file = abspath("{}/{}".format(self.mdp_dir, "plumed.dat"))
+        plumed_file = abspath(
+            "{}/{}/{}/restrained/plumed.dat".format(
+                self.md_dir,
+                self.iteration,
+                point_idx,
+            )
+        )
+        plumed_template_content = open(plumed_template_file, "r").readlines()
+        string_restraints_list = [string_restraints["pull-coord{}-init".format(n+1)]
+                                  for n in range(len(string_restraints.keys()))]
+        restr_counter = 0
+        for n, line in enumerate(plumed_template_content):
+            if "XXX" in line:
+                if string_restraints:
+                    plumed_template_content[n] = line.replace("XXX", str(string_restraints_list[restr_counter]))
+                else:
+                    plumed_template_content[n] = line.replace("XXX", '0')
+                restr_counter += 1
+        with open(plumed_file, "w") as f:
+            f.write(
+                "\n\n#--------automatically injected properties from python below----\n\n"
+            )
+            for line in plumed_template_content:
+                f.write(line)
+        return plumed_file
 
     @classmethod
     def from_config(clazz, config: Config, **kwargs):
@@ -296,5 +351,7 @@ class StringIterationRunner(object):
             mdrun_options_restrained=config.mdrun_options_restrained,
             gpus_per_node=config.gpus_per_node,
             use_function=config.use_function,
+            use_plumed=config.use_plumed,
+            use_api=config.use_api,
             **kwargs
         )
