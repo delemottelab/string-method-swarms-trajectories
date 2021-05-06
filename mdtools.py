@@ -20,6 +20,7 @@ def grompp(
         "-f": mdp_file,
         "-p": topology_file,
         "-c": structure_file,
+        "-r": structure_file,
     }
     output_files = {"-o": tpr_file, "-po": mdp_output_file}
     prep = gmx.commandline_operation(
