@@ -18,19 +18,23 @@ def grompp(
     index_file: str,
     tpr_file: str,
     mdp_output_file: str,
-    use_api: bool = True
+    use_api: bool = True,
+    grompp_options: list = None,
 ):
     input_files = {
         "-n": index_file,
         "-f": mdp_file,
         "-p": topology_file,
         "-c": structure_file,
+        "-r": structure_file,
     }
+    if grompp_options is None:
+        grompp_options = []
     output_files = {"-o": tpr_file, "-po": mdp_output_file}
     if use_api:
         prep = gmx.commandline_operation(
             executable="gmx",
-            arguments=["grompp"],
+            arguments=["grompp"] + grompp_options,
             input_files=input_files,
             output_files=output_files,
         )
@@ -39,8 +43,10 @@ def grompp(
     else:
         infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
         outfiles = ' '.join([k + ' ' + v for k, v in output_files.items()])
-        result = run(f"gmx grompp {infiles} {outfiles}", stdout=PIPE, stderr=PIPE, shell=True)
+        parse_options =  ' '.join(grompp_options)
+        result = run(f"gmx grompp {parse_options} {infiles} {outfiles}", stdout=PIPE, stderr=PIPE, shell=True)
         output = result.stderr
+
     if output:
         logger.info("grompp output:\n%s", output)
 

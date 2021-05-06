@@ -30,6 +30,7 @@ class StringIterationRunner(object):
     mdp_dir: Optional[str] = "mdp"
     mdrun_options_swarms: Optional[tuple] = None
     mdrun_options_restrained: Optional[tuple] = None
+    grompp_options: Optional[tuple] = None
     gpus_per_node: Optional[int] = None
     use_function: Optional[bool] = False
     use_plumed: Optional[bool] = False
@@ -119,7 +120,8 @@ class StringIterationRunner(object):
                         structure_file=in_file,
                         tpr_file=tpr_file,
                         mdp_output_file="{}/mdout.mdp".format(output_dir),
-                        use_api=self.use_api
+                        use_api=self.use_api,
+                        grompp_options=self.grompp_options,
                     )
                     grompp_tasks.append(("grompp", grompp_args))
                 # SPC Pick up checkpoint files if available
@@ -349,6 +351,7 @@ class StringIterationRunner(object):
             topology_dir=config.topology_dir,
             mdrun_options_swarms=config.mdrun_options_swarms,
             mdrun_options_restrained=config.mdrun_options_restrained,
+            grompp_options=config.grompp_options,
             gpus_per_node=config.gpus_per_node,
             use_function=config.use_function,
             use_plumed=config.use_plumed,
