@@ -14,17 +14,21 @@ def grompp(
     index_file: str,
     tpr_file: str,
     mdp_output_file: str,
+    grompp_options: list = None,
 ):
     input_files = {
         "-n": index_file,
         "-f": mdp_file,
         "-p": topology_file,
         "-c": structure_file,
+        "-r": structure_file,
     }
+    if grompp_options is None:
+        grompp_options = []
     output_files = {"-o": tpr_file, "-po": mdp_output_file}
     prep = gmx.commandline_operation(
         executable="gmx",
-        arguments=["grompp"],
+        arguments=["grompp"] + grompp_options,
         input_files=input_files,
         output_files=output_files,
     )
