@@ -67,7 +67,7 @@ def mdrun(
     plumed_file: str = None,
     use_api: bool = True
 ):
-    mpi_rank = mpi_rank - 1
+    mpi_rank = max(mpi_rank - 1,0)
     cwd = os.path.abspath(os.getcwd())
     os.chdir(output_dir)
     input_files = {"-s": tpr_file}
