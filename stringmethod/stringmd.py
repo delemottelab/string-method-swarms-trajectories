@@ -328,7 +328,7 @@ class StringIterationRunner(object):
                 if string_restraints:
                     plumed_template_content[n] = line.replace("XXX", str(string_restraints_list[restr_counter]))
                 else:
-                    plumed_template_content[n] = line.replace("XXX", '0')
+                    plumed_template_content[n] = ""
                 restr_counter += 1
         with open(plumed_file, "w") as f:
             f.write(
