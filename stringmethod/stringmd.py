@@ -241,7 +241,8 @@ class StringIterationRunner(object):
                         # This could be e.g. other restraints not part of the CV set
                     else:
                         pull_out = "{}/colvar".format(output_dir)
-                        data = np.loadtxt(pull_out)
+                        data_lines = [line in open(pull_out) if not line.startswith('#') and len(line.split()) == n_cvs + 1]
+                        data = np.array([[float(x) for x in line.split()] for line in data_lines])
                     data = data[:, 1: (n_cvs + 1)]
                     if self.use_function:
                         data = custom_function(data)
