@@ -55,7 +55,7 @@ def grompp(
 
 def grompp_all(task_list: List[dict]):
     from multiprocessing import Pool
-    proc_per_core = os.environ["SLURM_CPUS_ON_NODE"] if "SLURM_CPUS_ON_NODE" in os.environ.keys() else 1
+    proc_per_core = int(os.environ["SLURM_CPUS_ON_NODE"]) if "SLURM_CPUS_ON_NODE" in os.environ.keys() else 1
     with Pool(proc_per_core) as p:
         p.map(_grompp, task_list)
 
