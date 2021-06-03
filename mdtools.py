@@ -150,7 +150,16 @@ def mdrun_all(task_list: List[dict]):
     if plumed_file is not None:
         input_files["-plumed"] = plumed_file
     infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
-    n_jobs = int(os.environ['SLURM_NPROCS']) if 'SLURM_NPROCS' in os.environ.keys() else 1
+    n_cpu = int(os.environ['SLURM_NPROCS'])
+    if len(output_dirs) >= n_cpu:
+        n_jobs = n_cpu  # one or more batches
+    else:
+        cpu_per_node = int(os.environ['SLURM_CPUS_ON_NODE'])
+        divisors = [x for x in range(1, cpu_per_node+1) if cpu_per_node % x == 0]
+        n_jobs = 1
+        for div in divisors:
+            if div * len(output_dirs) <= n_cpu:
+                n_jobs = div * len(output_dirs)
     while output_dirs:
         if plumed_file is not None:
             for ddir in output_dirs[:n_jobs]:
@@ -161,7 +170,7 @@ def mdrun_all(task_list: List[dict]):
                         pass
         dirs = ' '.join(output_dirs[:n_jobs])
         del(output_dirs[:n_jobs])
-        mpie = "-n {}".format(len(dirs.split())) if len(dirs.split()) < n_jobs else ""
+        mpie = "-n {}".format(len(dirs.split())) if len(dirs.split()) < n_jobs else "-n {}".format(n_jobs)
         result = run(f"mpiexec {mpie} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} -multidir {dirs}", stdout=PIPE, stderr=PIPE, shell=True)
         output = result.stderr
         if plumed_file is not None:
