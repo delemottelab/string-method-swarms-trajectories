@@ -1,6 +1,8 @@
 import os
 import shutil
 from subprocess import run, PIPE
+from glob import glob
+from typing import List
 
 try:
     import gmxapi as gmx
@@ -49,6 +51,17 @@ def grompp(
 
     if output:
         logger.info("grompp output:\n%s", output)
+
+
+def grompp_all(task_list: List[dict]):
+    from multiprocessing import Pool
+    proc_per_core = os.environ["SLURM_CPUS_ON_NODE"] if "SLURM_CPUS_ON_NODE" in os.environ.keys() else 1
+    with Pool(proc_per_core) as p:
+        p.map(_grompp, task_list)
+
+
+def _grompp(args: dict):
+    return grompp(**args)
 
 
 def _move_all_files(src, dest):
@@ -125,6 +138,38 @@ def mdrun(
     # path = path[:path.rfind("/") + 1]
     # _move_all_files(path, output_dir)
     # os.removedirs(path)
+
+
+def mdrun_all(task_list: List[dict]):
+    output_dirs = [t['output_dir'] for t in task_list]
+    tpr_file = task_list[0]['tpr_file'].split('/')[-1]
+    plumed_file = task_list[0]['plumed_file'].split('/')[-1] if task_list[0]['plumed_file'] is not None else None
+    input_files = {"-s": tpr_file, "-cpi": ""}
+    if plumed_file is not None:
+        input_files["-plumed"] = plumed_file
+    infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
+    n_jobs = int(os.environ['SLURM_NPROCS']) if 'SLURM_NPROCS' in os.environ.keys() else 1
+    while output_dirs:
+        if plumed_file is not None:
+            for ddir in output_dirs[:n_jobs]:
+                if 'restrained' not in ddir:
+                    try:
+                        os.symlink(ddir + '/../restrained/' + plumed_file, ddir + '/' + plumed_file)
+                    except:
+                        pass
+        dirs = ' '.join(output_dirs[:n_jobs])
+        del(output_dirs[:n_jobs])
+        mpie = "-n {}".format(len(dirs.split())) if len(dirs.split()) < n_jobs else ""
+        result = run(f"mpiexec {mpie} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} -multidir {dirs}", stdout=PIPE, stderr=PIPE, shell=True)
+        output = result.stderr
+        if plumed_file is not None:
+            for ddir in dirs.split():
+                try:
+                    os.symlink(glob(f'{ddir}/colvar*')[0], ddir + '/' + 'colvar')
+                except:
+                    pass
+        if output:
+            logger.info("mdrun output:\n%s", output)
 
 
 def load_xvg(file_name: str, usemask: bool = False) -> np.array:
