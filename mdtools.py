@@ -22,6 +22,7 @@ def grompp(
     mdp_output_file: str,
     use_api: bool = True,
     grompp_options: list = None,
+    gmx_executable: str = 'gmx'
 ):
     input_files = {
         "-n": index_file,
@@ -45,8 +46,9 @@ def grompp(
     else:
         infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
         outfiles = ' '.join([k + ' ' + v for k, v in output_files.items()])
+        gmx = "mpiexec -n 1 gmx_mpi" if gmx_executable == "gmx_mpi" else "gmx"
         parse_options =  ' '.join(grompp_options)
-        result = run(f"gmx grompp {parse_options} {infiles} {outfiles}", stdout=PIPE, stderr=PIPE, shell=True)
+        result = run(f"{gmx} grompp {parse_options} {infiles} {outfiles}", stdout=PIPE, stderr=PIPE, shell=True)
         output = result.stderr
 
     if output:
@@ -61,7 +63,7 @@ def grompp_all(task_list: List[dict]):
 
 
 def _grompp(args: dict):
-    return grompp(**args)
+    return grompp(**args.update({'gmx_executable': 'gmx_mpi'}))
 
 
 def _move_all_files(src, dest):
