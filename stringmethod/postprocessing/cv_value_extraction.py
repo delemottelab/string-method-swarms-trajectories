@@ -25,6 +25,7 @@ class CvValueExtractor(AbstractPostprocessor):
     Third index sets the CV values in that frame.
     """
     cv_coordinates: Optional[np.array] = None
+    use_plumed: Optional[bool] = False
 
     def __post_init__(self):
         pass
@@ -37,7 +38,10 @@ class CvValueExtractor(AbstractPostprocessor):
         logger.info("Remember to remove unfinished strings")
         cv_coordinates = None
         for it in range(self.first_iteration, self.last_iteration + 1):
-            iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
+            if not self.use_plumed:
+                iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
+            else:
+                iteration_md_dir = "{}/{}/*/s*/colvar".format(self.md_dir, it)
             xvg_files = glob.glob(iteration_md_dir)
             if len(xvg_files) == 0:
                 logger.info(

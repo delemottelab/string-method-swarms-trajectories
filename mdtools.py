@@ -197,27 +197,12 @@ def load_xvg(file_name: str, usemask: bool = False) -> np.array:
     if not os.path.exists(file_name):
         raise FileNotFoundError("WARNING: file " + file_name + " not found.")
 
-    # Since xvg files can have both @ and # as a head we check
-    # the size of the header here.
-    # genfromtxt ignores lines starting with #.
-    # Also extract comments starting with # here.
-    nskip = 0
-    comments = []
-    founddata = False
-    with open(file_name) as f:
-        for line in f:
-
-            if line.startswith("#"):
-                comments.append(line.rstrip("\n").lstrip("#").rstrip().lstrip())
-
-            if line.startswith(("@", "#")):
-                if not founddata:
-                    nskip += 1
-            else:
-                founddata = True
-    data = np.genfromtxt(
-        file_name, skip_header=nskip, invalid_raise=True, usemask=usemask
-    )
+    # Since xvg/colvar files can have both @ and # as a head, we only read lines that don't start with these chars
+    data_lines = [line for line in open(file_name) if not line.startswith(('#', '@'))]
+    # then convert them to lists of floats
+    data_lines_num = [[float(x) for x in line.split()] for line in data_lines]
+    # and remove lines that have inconsistent number of fields (e.g. due to write errors during restarting).
+    data = [line for line in data_lines_num if len(line) == len(data_lines_num[0])]
     if len(data) == 0:
         raise IOError("No data found in file " + file_name)
     return np.array(data)
