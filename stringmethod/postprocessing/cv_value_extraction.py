@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-
+import re
 from stringmethod import logger
 import mdtools
 from stringmethod.config import Config
@@ -29,6 +29,10 @@ class CvValueExtractor(AbstractPostprocessor):
 
     def __post_init__(self):
         pass
+    def _natural_sort(l): 
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        return sorted(l, key=alphanum_key)
 
     def _do_run(self) -> bool:
         self.cv_coordinates = self.compute_cv_coordinates()
@@ -42,7 +46,8 @@ class CvValueExtractor(AbstractPostprocessor):
                 iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
             else:
                 iteration_md_dir = "{}/{}/*/s*/colvar".format(self.md_dir, it)
-            xvg_files = glob.glob(iteration_md_dir)
+            xvg_files = _natural_sort(glob.glob(iteration_md_dir))
+
             if len(xvg_files) == 0:
                 logger.info(
                     "No output files found for iteration %s. Not looking further",
