@@ -1,5 +1,5 @@
 import glob
-import sys
+import sys, os
 from dataclasses import dataclass
 from typing import Optional
 
@@ -42,28 +42,33 @@ class CvValueExtractor(AbstractPostprocessor):
         logger.info("Remember to remove unfinished strings")
         cv_coordinates = None
         for it in range(self.first_iteration, self.last_iteration + 1):
-            if not self.use_plumed:
-                iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
+            logger.info("Processing iteration {}".format(it))
+            iter_data = "{}/cv_iter{}.npy".format(self._get_out_dir(), it)
+            if os.path.isfile(iter_data):
+                values = np.load(iter_data)
             else:
-                iteration_md_dir = "{}/{}/*/s*/colvar".format(self.md_dir, it)
-            xvg_files = _natural_sort(glob.glob(iteration_md_dir))
-
-            if len(xvg_files) == 0:
-                logger.info(
-                    "No output files found for iteration %s. Not looking further",
-                    it,
-                )
-                return cv_coordinates
-            values = None
-            for file_idx, xf in enumerate(xvg_files):
-                data = mdtools.load_xvg(file_name=xf)
-                # Skip first column which contains the time and include only first and last frame
-                data = data[[0, -1], 1:]
-                if values is None:
-                    n_cvs = data.shape[1]
-                    values = np.empty((len(xvg_files), 2, n_cvs))
-                values[file_idx, :, :] = data
-
+                if not self.use_plumed:
+                    iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
+                else:
+                    iteration_md_dir = "{}/{}/*/s*/colvar".format(self.md_dir, it)
+                xvg_files = glob.glob(iteration_md_dir)
+                if len(xvg_files) == 0:
+                    logger.info(
+                        "No output files found for iteration %s. Not looking further",
+                        it,
+                    )
+                    return cv_coordinates
+                values = None
+                for file_idx, xf in enumerate(xvg_files):
+                    data = mdtools.load_xvg(file_name=xf)
+                    # Skip first column which contains the time and include only first and last frame
+                    data = data[[0, -1], 1:]
+                    if values is None:
+                        n_cvs = data.shape[1]
+                        values = np.empty((len(xvg_files), 2, n_cvs))
+                    values[file_idx, :, :] = data
+                if it < self.last_iteration:
+                    np.save(iter_data, values)
             if cv_coordinates is None:
                 cv_coordinates = values
             else:
