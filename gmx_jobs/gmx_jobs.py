@@ -80,6 +80,7 @@ class GmxSlave(Slave):
         super(GmxSlave, self).__init__()
 
     def run_all(self, tasks: List[Tuple[str, dict]]):
+        # TODO retire the old way once the new is implemented & tested
         if 'SLURM_NPROCS' not in os.environ.keys() or int(os.environ['SLURM_NPROCS']) == 1:
             for t in tasks:
                 done, message = self.do_work(t)
@@ -95,7 +96,10 @@ class GmxSlave(Slave):
             elif tasks[0][0] == "grompp":
                 mdtools.grompp_all([t[1] for t in tasks])
             elif tasks[0][0] == "mdrun":
-                mdtools.mdrun_all([t[1] for t in tasks])
+                if len(tasks) > 1:
+                    mdtools.mdrun_all([t[1] for t in tasks])
+                else:
+                    mdtools.mdrun_one(tasks[0][1])
             else:
                 raise ValueError("Unknown task operation {}".format(tasks[0][0]))
 
