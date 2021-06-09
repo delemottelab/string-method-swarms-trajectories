@@ -183,6 +183,24 @@ def mdrun_all(task_list: List[dict]):
             logger.info("mdrun output:\n%s", output)
 
 
+def mdrun_one(task: dict):
+    output_dir = task['output_dir']
+    wdir = os.getcwd()
+    os.chdir(output_dir)
+    tpr_file = task['tpr_file']
+    plumed_file = task['plumed_file']
+    input_files = {"-s": tpr_file, "-cpi": ""}
+    if plumed_file is not None:
+        input_files["-plumed"] = plumed_file
+    infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
+    n_cpu = int(os.environ['SLURM_NPROCS'])
+    result = run(f"srun -n {n_cpu} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles}", stdout=PIPE, stderr=PIPE, shell=True)
+    output = result.stderr
+    if output:
+        logger.info("mdrun output:\n%s", output)
+    os.chdir(wdir)
+
+
 def load_xvg(file_name: str, usemask: bool = False) -> np.array:
     """
     Originally from https://github.com/vivecalindahl/awh-use-case/blob/master/scripts/analysis/read_write.py
