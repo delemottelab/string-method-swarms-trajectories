@@ -46,7 +46,7 @@ def grompp(
     else:
         infiles = ' '.join([k + ' ' + v for k, v in input_files.items()])
         outfiles = ' '.join([k + ' ' + v for k, v in output_files.items()])
-        gmx = "mpiexec -n 1 gmx_mpi" if gmx_executable == "gmx_mpi" else "gmx"
+        gmx = "srun -n 1 gmx_mpi" if gmx_executable == "gmx_mpi" else "gmx"
         parse_options =  ' '.join(grompp_options)
         result = run(f"{gmx} grompp {parse_options} {infiles} {outfiles}", stdout=PIPE, stderr=PIPE, shell=True)
         output = result.stderr
@@ -57,13 +57,14 @@ def grompp(
 
 def grompp_all(task_list: List[dict]):
     from multiprocessing import Pool
-    proc_per_core = int(os.environ["SLURM_CPUS_ON_NODE"]) if "SLURM_CPUS_ON_NODE" in os.environ.keys() else 1
+    proc_per_core = int(os.environ["SLURM_NTASKS_PER_NODE"]) if "SLURM_NTASKS_PER_NODE" in os.environ.keys() else 1
     with Pool(proc_per_core) as p:
         p.map(_grompp, task_list)
 
 
 def _grompp(args: dict):
-    return grompp(**args.update({'gmx_executable': 'gmx_mpi'}))
+    args.update({'gmx_executable': 'gmx_mpi'})
+    return grompp(**args)
 
 
 def _move_all_files(src, dest):
@@ -154,7 +155,7 @@ def mdrun_all(task_list: List[dict]):
     if len(output_dirs) >= n_cpu:
         n_jobs = n_cpu  # one or more batches
     else:
-        cpu_per_node = int(os.environ['SLURM_CPUS_ON_NODE'])
+        cpu_per_node = int(os.environ['SLURM_NTASKS_PER_NODE'])
         divisors = [x for x in range(1, cpu_per_node+1) if cpu_per_node % x == 0]
         n_jobs = 1
         for div in divisors:
@@ -171,7 +172,7 @@ def mdrun_all(task_list: List[dict]):
         dirs = ' '.join(output_dirs[:n_jobs])
         del(output_dirs[:n_jobs])
         mpie = "-n {}".format(len(dirs.split())) if len(dirs.split()) < n_jobs else "-n {}".format(n_jobs)
-        result = run(f"mpiexec {mpie} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} -multidir {dirs}", stdout=PIPE, stderr=PIPE, shell=True)
+        result = run(f"srun {mpie} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} -multidir {dirs}", stdout=PIPE, stderr=PIPE, shell=True)
         output = result.stderr
         if plumed_file is not None:
             for ddir in dirs.split():
