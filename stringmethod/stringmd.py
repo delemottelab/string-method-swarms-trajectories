@@ -39,6 +39,9 @@ class StringIterationRunner(object):
     def run(self):
 
         while self.iteration <= self.max_iterations:
+            if os.path.isfile(self._get_string_filepath(self.iteration)):
+                self.iteration += 1
+                continue
             self._init()
             self._run_restrained()
             self._run_swarms()
