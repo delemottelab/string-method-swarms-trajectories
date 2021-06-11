@@ -28,16 +28,16 @@ class CvValueExtractor(AbstractPostprocessor):
 
     def __post_init__(self):
         pass
-    def _natural_sort(l): 
-        convert = lambda text: int(text) if text.isdigit() else text.lower()
-        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-        return sorted(l, key=alphanum_key)
 
     def _do_run(self) -> bool:
         self.cv_coordinates = self.compute_cv_coordinates()
         return True
 
     def compute_cv_coordinates(self) -> np.array:
+        def _natural_sort(l): 
+            convert = lambda text: int(text) if text.isdigit() else text.lower()
+            alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+            return sorted(l, key=alphanum_key)
         logger.info("Remember to remove unfinished strings")
         cv_coordinates = None
         for it in range(self.first_iteration, self.last_iteration + 1):
