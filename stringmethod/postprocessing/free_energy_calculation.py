@@ -167,7 +167,7 @@ class FreeEnergyCalculator(AbstractPostprocessor):
         rho = rho / np.sum(rho)
         convergences = []
         convergence = 100
-        while convergence > 1e-6:
+        while convergence > 1e-12:
             last = rho  # np.copy(rho)
             for k, rhok in enumerate(rho):
                 if rhok == 0:
