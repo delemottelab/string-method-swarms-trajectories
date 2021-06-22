@@ -81,27 +81,17 @@ class GmxSlave(Slave):
 
     def run_all(self, tasks: List[Tuple[str, dict]]):
         # TODO retire the old way once the new is implemented & tested
-        if 'SLURM_NPROCS' not in os.environ.keys() or int(os.environ['SLURM_NPROCS']) == 1:
-            for t in tasks:
-                done, message = self.do_work(t)
-                if done:
-                    logger.debug('Finished task with message "%s"', message)
-                else:
-                    raise JobFailedException(
-                        "Slave failed job with message '%s'." % message
-                    )
-        else:
-            if not tasks:
-                return
-            elif tasks[0][0] == "grompp":
-                mdtools.grompp_all([t[1] for t in tasks])
-            elif tasks[0][0] == "mdrun":
-                if len(tasks) > 1:
-                    mdtools.mdrun_all([t[1] for t in tasks])
-                else:
-                    mdtools.mdrun_one(tasks[0][1])
+        if not tasks:
+            return
+        elif tasks[0][0] == "grompp":
+            mdtools.grompp_all([t[1] for t in tasks])
+        elif tasks[0][0] == "mdrun":
+            if len(tasks) > 1:
+                mdtools.mdrun_all([t[1] for t in tasks])
             else:
-                raise ValueError("Unknown task operation {}".format(tasks[0][0]))
+                mdtools.mdrun_one(tasks[0][1])
+        else:
+            raise ValueError("Unknown task operation {}".format(tasks[0][0]))
 
 
     def do_work(self, task: Tuple[str, dict]):
