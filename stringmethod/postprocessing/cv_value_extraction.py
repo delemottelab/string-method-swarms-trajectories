@@ -29,9 +29,10 @@ class CvValueExtractor(AbstractPostprocessor):
 
     def __post_init__(self):
         pass
-    def _natural_sort(l): 
+    
+    def _natural_sort(self, l):
         convert = lambda text: int(text) if text.isdigit() else text.lower()
-        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
         return sorted(l, key=alphanum_key)
 
     def _do_run(self) -> bool:
@@ -51,7 +52,7 @@ class CvValueExtractor(AbstractPostprocessor):
                     iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
                 else:
                     iteration_md_dir = "{}/{}/*/s*/colvar".format(self.md_dir, it)
-                xvg_files = glob.glob(iteration_md_dir)
+                xvg_files = self._natural_sort(glob.glob(iteration_md_dir))
                 if len(xvg_files) == 0:
                     logger.info(
                         "No output files found for iteration %s. Not looking further",
