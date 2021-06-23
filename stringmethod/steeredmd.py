@@ -20,7 +20,10 @@ class SteeredRunner(object):
     topology_dir: Optional[str] = "topology"
     steered_simulation_length_ps: Optional[float] = None
     mdrun_options_steered: Optional[tuple] = None
+    use_plumed: Optional[bool] = False
+    use_api: Optional[bool] = True
     grompp_options: Optional[tuple] = None
+
 
     def __post_init__(self):
         if self.steered_simulation_length_ps is None:
@@ -61,15 +64,40 @@ class SteeredRunner(object):
         pull_rates = (end_point - start_point) / self.steered_simulation_length_ps
         modified_mdp_file = output_dir + "/grompp.mdp"
         shutil.copy(self.mdp_file, modified_mdp_file)
-        with open(modified_mdp_file, "a") as f:
-            f.write(
-                "\n\n;--------automatically injected properties from python below----\n\n"
-            )
-            for cv_idx, rate in enumerate(pull_rates):
+        if not self.use_plumed:
+            plumed_file = None
+            with open(modified_mdp_file, "a") as f:
                 f.write(
-                    "pull-coord{}-init={}\n".format(cv_idx + 1, start_point[cv_idx])
+                    "\n\n;--------automatically injected properties from python below----\n\n"
                 )
-                f.write("pull-coord{}-rate={}\n".format(cv_idx + 1, rate))
+                for cv_idx, rate in enumerate(pull_rates):
+                    f.write(
+                        "pull-coord{}-init={}\n".format(
+                            cv_idx + 1, start_point[cv_idx]
+                        )
+                    )
+                    f.write("pull-coord{}-rate={}\n".format(cv_idx + 1, rate))
+        else:
+            plumed_template_file = abspath("{}/{}".format('/'.join(self.mdp_file.split('/')[:-1]), "plumed_pull.dat"))
+            plumed_file = abspath("{}/plumed.dat".format(output_dir))
+            plumed_template_content = open(plumed_template_file, "r").readlines()
+            mdp_options = utils.parse_mdp(self.mdp_file)
+            steered_simulation_steps = mdp_options.get("nsteps", 0)
+            count = 0
+            for n, line in enumerate(plumed_template_content):
+                if "XSTART" in line:
+                    line = line.replace("XSTART", str(start_point[count]))
+                    line = line.replace("XEND", str(end_point[count]))
+                    line = line.replace("XTIME", str(int(steered_simulation_steps)))
+                    count += 1
+                    plumed_template_content[n] = line
+            with open(plumed_file, "w") as f:
+                f.write(
+                    "\n\n#--------automatically injected properties from python below----\n\n"
+
+                )
+                for line in plumed_template_content:
+                    f.write(line)
 
         # Submit jobs
         # TODO: code duplication from stringmethod.md below. Refactor into common functionality
@@ -91,6 +119,7 @@ class SteeredRunner(object):
                 structure_file=in_file,
                 tpr_file=tpr_file,
                 mdp_output_file="{}/mdout.mdp".format(output_dir),
+                use_api=self.use_api,
                 grompp_options=self.grompp_options,
             )
             gmx_jobs.submit(
@@ -115,6 +144,8 @@ class SteeredRunner(object):
                 tpr_file=tpr_file,
                 check_point_file=check_point_file,
                 mdrun_options=self.mdrun_options_steered,
+                plumed_file=plumed_file,
+                use_api=self.use_api
             )
             gmx_jobs.submit(
                 tasks=[("mdrun", mdrun_args)],
@@ -137,6 +168,9 @@ class SteeredRunner(object):
             md_dir=config.md_dir,
             topology_dir=config.topology_dir,
             mdrun_options_steered=config.mdrun_options_steered,
+            use_plumed=config.use_plumed,
+            use_api=config.use_api,
             grompp_options=config.grompp_options,
+
             **kwargs
         )

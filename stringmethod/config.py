@@ -46,6 +46,10 @@ class Config(object):
     gpus_per_node: Optional[int] = None
     """Use a function to combine cvs"""
     use_function: Optional[bool] = False
+    """Use Plumed instead of Gromacs' pull code for defining cvs"""
+    use_plumed: Optional[bool] = False
+    """Use the gmxapi module instead of generic command-line calls"""
+    use_api: Optional[bool] = True
     """
     Version of the software code, defined as stringmethod.version.
     Might be used in the future to ensure backwards compatibility.
@@ -76,5 +80,15 @@ def load_config(config_file: str) -> Config:
         with open(config_file) as json_file:
             data = json.load(json_file)
             c = Config(**data)
+    for prop in ['use_plumed', 'use_api', 'use_function', 'fixed_endpoints']:
+        attr = c.__getattribute__(prop)
+        if not isinstance(attr, bool):
+            if attr.lower() == 'true':
+                attr = True
+            elif attr.lower() == 'false':
+                attr = False
+            else:
+                attr = bool(attr)
+            c.__setattr__(prop, attr)
     c.validate()
     return c

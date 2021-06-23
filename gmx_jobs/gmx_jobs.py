@@ -1,5 +1,6 @@
 import time
 from typing import List, Tuple
+import os
 
 import mdtools
 from gmx_jobs.mpi_master_slave import Master, Slave, WorkQueue
@@ -79,14 +80,19 @@ class GmxSlave(Slave):
         super(GmxSlave, self).__init__()
 
     def run_all(self, tasks: List[Tuple[str, dict]]):
-        for t in tasks:
-            done, message = self.do_work(t)
-            if done:
-                logger.debug('Finished task with message "%s"', message)
+        # TODO retire the old way once the new is implemented & tested
+        if not tasks:
+            return
+        elif tasks[0][0] == "grompp":
+            mdtools.grompp_all([t[1] for t in tasks])
+        elif tasks[0][0] == "mdrun":
+            if len(tasks) > 1:
+                mdtools.mdrun_all([t[1] for t in tasks])
             else:
-                raise JobFailedException(
-                    "Slave failed job with message '%s'." % message
-                )
+                mdtools.mdrun_one(tasks[0][1])
+        else:
+            raise ValueError("Unknown task operation {}".format(tasks[0][0]))
+
 
     def do_work(self, task: Tuple[str, dict]):
         try:

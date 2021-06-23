@@ -15,12 +15,15 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 from mpi4py import MPI
-import gmxapi
 
 logger: Logger = logging.getLogger(
     "stringmethod-{}".format(MPI.COMM_WORLD.Get_rank())
 )
-gmxapi.logger.setLevel(logging.WARNING)
+try:
+    import gmxapi
+    gmxapi.logger.setLevel(logging.WARNING)
+except:
+    pass
 VERSION = "1.0.0"
 
 __all__ = [
