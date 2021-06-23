@@ -49,7 +49,7 @@ class Config(object):
     """Use Plumed instead of Gromacs' pull code for defining cvs"""
     use_plumed: Optional[bool] = False
     """Use the gmxapi module instead of generic command-line calls"""
-    use_api: Optional[bool] = True
+    use_api: Optional[bool] = False
     """
     Version of the software code, defined as stringmethod.version.
     Might be used in the future to ensure backwards compatibility.
@@ -80,12 +80,12 @@ def load_config(config_file: str) -> Config:
         with open(config_file) as json_file:
             data = json.load(json_file)
             c = Config(**data)
-    for prop in ['use_plumed', 'use_api', 'use_function', 'fixed_endpoints']:
+    for prop in ["use_plumed", "use_api", "use_function", "fixed_endpoints"]:
         attr = c.__getattribute__(prop)
         if not isinstance(attr, bool):
-            if attr.lower() == 'true':
+            if attr.lower() == "true":
                 attr = True
-            elif attr.lower() == 'false':
+            elif attr.lower() == "false":
                 attr = False
             else:
                 attr = bool(attr)
