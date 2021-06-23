@@ -93,7 +93,6 @@ class GmxSlave(Slave):
         else:
             raise ValueError("Unknown task operation {}".format(tasks[0][0]))
 
-
     def do_work(self, task: Tuple[str, dict]):
         try:
             operation, args = task

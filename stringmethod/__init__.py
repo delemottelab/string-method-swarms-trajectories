@@ -21,6 +21,7 @@ logger: Logger = logging.getLogger(
 )
 try:
     import gmxapi
+
     gmxapi.logger.setLevel(logging.WARNING)
 except:
     pass

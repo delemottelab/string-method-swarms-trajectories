@@ -5,7 +5,9 @@ from .transition_count_calculation import TransitionCountCalculator
 
 
 def run(config: Config):
-    ce = CvValueExtractor.from_config(config=config, md_dir=config.md_dir, use_plumed=config.use_plumed)
+    ce = CvValueExtractor.from_config(
+        config=config, md_dir=config.md_dir, use_plumed=config.use_plumed
+    )
     ce.run()
     ce.persist()
     tc = TransitionCountCalculator.from_config(
