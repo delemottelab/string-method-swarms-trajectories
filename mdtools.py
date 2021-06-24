@@ -1,7 +1,7 @@
 import os
 import shutil
-from subprocess import run, PIPE
 from glob import glob
+from subprocess import PIPE, run
 from typing import List
 
 try:
@@ -9,7 +9,6 @@ try:
 except:
     pass
 import numpy as np
-
 from stringmethod import logger
 
 
@@ -175,9 +174,7 @@ def mdrun_all(task_list: List[dict]):
         n_jobs = n_cpu  # one or more batches
     else:
         cpu_per_node = int(os.environ["SLURM_NTASKS_PER_NODE"])
-        divisors = [
-            x for x in range(1, cpu_per_node + 1) if cpu_per_node % x == 0
-        ]
+        divisors = [x for x in range(1, cpu_per_node + 1) if cpu_per_node % x == 0]
         n_jobs = 1
         for div in divisors:
             if div * len(output_dirs) <= n_cpu:
@@ -210,9 +207,7 @@ def mdrun_all(task_list: List[dict]):
         if plumed_file is not None:
             for ddir in dirs.split():
                 try:
-                    os.symlink(
-                        glob(f"{ddir}/colvar*")[0], ddir + "/" + "colvar"
-                    )
+                    os.symlink(glob(f"{ddir}/colvar*")[0], ddir + "/" + "colvar")
                 except:
                     pass
         if output:
@@ -260,15 +255,11 @@ def load_xvg(file_name: str, usemask: bool = False) -> np.array:
         raise FileNotFoundError("WARNING: file " + file_name + " not found.")
 
     # Since xvg/colvar files can have both @ and # as a head, we only read lines that don't start with these chars
-    data_lines = [
-        line for line in open(file_name) if not line.startswith(("#", "@"))
-    ]
+    data_lines = [line for line in open(file_name) if not line.startswith(("#", "@"))]
     # then convert them to lists of floats
     data_lines_num = [[float(x) for x in line.split()] for line in data_lines]
     # and remove lines that have inconsistent number of fields (e.g. due to write errors during restarting).
-    data = [
-        line for line in data_lines_num if len(line) == len(data_lines_num[0])
-    ]
+    data = [line for line in data_lines_num if len(line) == len(data_lines_num[0])]
     if len(data) == 0:
         raise IOError("No data found in file " + file_name)
     return np.array(data)
