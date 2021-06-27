@@ -166,7 +166,7 @@ def mdrun_all(task_list: List[dict]):
         if task_list[0]["plumed_file"] is not None
         else None
     )
-    input_files = {"-s": tpr_file}
+    input_files = {"-s": tpr_file, "-cpi": ""}
     if plumed_file is not None:
         input_files["-plumed"] = plumed_file
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
@@ -191,10 +191,6 @@ def mdrun_all(task_list: List[dict]):
                         )
                     except:
                         pass
-        if os.path.isfile(f"{output_dirs[0]}/state.cpt"):
-            cpt_file = "-cpi state.cpt"
-        else:
-            cpt_file = ""
         dirs = " ".join(output_dirs[:n_jobs])
         del output_dirs[:n_jobs]
         mpie = (
@@ -202,9 +198,8 @@ def mdrun_all(task_list: List[dict]):
             if len(dirs.split()) < n_jobs
             else "-n {}".format(n_jobs)
         )
-
         result = run(
-            f"srun {mpie} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} {cpt_file} -multidir {dirs}",
+            f"srun {mpie} gmx_mpi mdrun -cpo state.cpt {infiles} -multidir {dirs}",
             stdout=PIPE,
             stderr=PIPE,
             shell=True,
