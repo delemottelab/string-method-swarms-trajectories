@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 
 from stringmethod import logger
+
 from .base import AbstractPostprocessor
 from .index_conversion import IndexConverter
 
@@ -29,6 +30,10 @@ class FreeEnergyCalculator(AbstractPostprocessor):
     System temperature
     """
     T: Optional[float] = 300.0
+    """
+    Convergence cutoff for FES algorithm.
+    """
+    convergence_cutoff: Optional[float] = 1.0e-10
     probability_distribution: Optional[np.array] = None
     free_energy: Optional[np.array] = None
     _index_converter: Optional[IndexConverter] = None
@@ -112,15 +117,10 @@ class FreeEnergyCalculator(AbstractPostprocessor):
                 vec = np.real(vec)
                 stationary_solution = vec / np.sum(vec)
                 unit_eigenval = eigenval
-        relaxation_eigenval = (
-            None  # corresponds to the largest eigenvalue less than 1
-        )
+        relaxation_eigenval = None  # corresponds to the largest eigenvalue less than 1
         for idx, eigenval in enumerate(eigenvalues):
             if eigenval < 1 and eigenval != unit_eigenval:
-                if (
-                    relaxation_eigenval is None
-                    or eigenval > relaxation_eigenval
-                ):
+                if relaxation_eigenval is None or eigenval > relaxation_eigenval:
                     relaxation_eigenval = eigenval
         if stationary_solution is None:
             raise Exception(
@@ -167,7 +167,7 @@ class FreeEnergyCalculator(AbstractPostprocessor):
         rho = rho / np.sum(rho)
         convergences = []
         convergence = 100
-        while convergence > 1e-12:
+        while convergence > self.convergence_cutoff:
             last = rho  # np.copy(rho)
             for k, rhok in enumerate(rho):
                 if rhok == 0:
