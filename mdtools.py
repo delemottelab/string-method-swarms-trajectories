@@ -166,7 +166,7 @@ def mdrun_all(task_list: List[dict]):
         if task_list[0]["plumed_file"] is not None
         else None
     )
-    input_files = {"-s": tpr_file, "-cpi": ""}
+    input_files = {"-s": tpr_file}
     if plumed_file is not None:
         input_files["-plumed"] = plumed_file
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
