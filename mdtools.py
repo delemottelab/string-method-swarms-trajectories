@@ -48,7 +48,6 @@ def grompp_all(task_list: List[dict]):
         if "SLURM_NTASKS_PER_NODE" in os.environ.keys()
         else 1
     )
-    print(task_list[0])
     with Pool(proc_per_core) as p:
         p.map(grompp_one, task_list)
 
@@ -60,6 +59,7 @@ def _move_all_files(src, dest):
 
 
 def mdrun_all(task_list: List[dict]):
+    print(task_list[0])
     output_dirs = [t["output_dir"] for t in task_list]
     tpr_file = task_list[0]["tpr_file"].split("/")[-1]
     plumed_file = (
