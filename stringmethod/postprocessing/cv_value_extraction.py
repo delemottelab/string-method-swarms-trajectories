@@ -1,13 +1,16 @@
 import glob
-import sys, os
+import os
+import re
+import sys
 from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-import re
-from stringmethod import logger
+
 import mdtools
+from stringmethod import logger
 from stringmethod.config import Config
+
 from .base import AbstractPostprocessor
 
 

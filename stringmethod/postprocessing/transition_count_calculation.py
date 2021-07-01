@@ -4,6 +4,7 @@ from typing import Optional
 import numpy as np
 
 from stringmethod import logger
+
 from .base import AbstractPostprocessor
 from .index_conversion import IndexConverter
 

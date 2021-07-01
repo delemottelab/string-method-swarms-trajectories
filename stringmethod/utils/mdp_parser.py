@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 def parse_mdp(mdp_file: str) -> Dict[str, Any]:

@@ -1,4 +1,5 @@
 from stringmethod.config import Config
+
 from .cv_value_extraction import CvValueExtractor
 from .free_energy_calculation import FreeEnergyCalculator
 from .transition_count_calculation import TransitionCountCalculator

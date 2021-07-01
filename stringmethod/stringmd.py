@@ -283,7 +283,6 @@ class StringIterationRunner(object):
     def _create_restrained_mdp_file(
         self, point_idx: int, string_restraints: Dict[str, Any]
     ) -> str:
-        # TODO use gmxapi#mdrun#override_input when it supports supports pull-coord1-init
         mdp_template_file = abspath("{}/{}".format(self.mdp_dir, "restrained.mdp"))
         mdp_file = abspath(
             "{}/{}/{}/restrained/restrained.mdp".format(
