@@ -177,6 +177,7 @@ class StringIterationRunner(object):
                         ),
                         tpr_file=tpr_file,
                         mdp_output_file="{}/mdout.mdp".format(output_dir),
+                        grompp_options=self.grompp_options,
                     )
                     grompp_tasks.append(("grompp", grompp_args))
                 # Pick up checkpoint files if available
