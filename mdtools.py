@@ -59,9 +59,9 @@ def _move_all_files(src, dest):
 
 
 def mdrun_all(task_list: List[dict]):
-    print(task_list[0])
     output_dirs = [t["output_dir"] for t in task_list]
     tpr_file = task_list[0]["tpr_file"].split("/")[-1]
+    mdrun_options = task_list[0]["mdrun_options"]
     plumed_file = (
         task_list[0]["plumed_file"].split("/")[-1]
         if task_list[0]["plumed_file"] is not None
@@ -70,7 +70,9 @@ def mdrun_all(task_list: List[dict]):
     input_files = {"-s": tpr_file}
     if plumed_file is not None:
         input_files["-plumed"] = plumed_file
+    mdrun_options_parsed = mdrun_options[:] if mdrun_options is not None else []
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
+    mdrun_options_parsed = " ".join(mdrun_options_parsed)
     n_cpu = int(os.environ["SLURM_NPROCS"])
     if len(output_dirs) >= n_cpu:
         n_jobs = n_cpu  # one or more batches
@@ -100,7 +102,7 @@ def mdrun_all(task_list: List[dict]):
             else "-n {}".format(n_jobs)
         )
         result = run(
-            f"srun {mpie} gmx_mpi mdrun -cpo state.cpt {infiles} -multidir {dirs}",
+            f"srun {mpie} gmx_mpi mdrun -cpo state.cpt {infiles} -multidir {dirs} {mdrun_options_parsed}",
             stdout=PIPE,
             stderr=PIPE,
             shell=True,
@@ -124,14 +126,18 @@ def mdrun_one(task: dict):
     plumed_file = task["plumed_file"]
     check_point_file = task["check_point_file"]
     input_files = {"-s": tpr_file, "-cpi": ""}
+    mdrun_options_parsed = (
+        task["mdrun_options"][:] if task["mdrun_options"] is not None else []
+    )
     if check_point_file is not None:
         input_files["-cpi"] = check_point_file
     if plumed_file is not None:
         input_files["-plumed"] = plumed_file
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
+    mdrun_options_parsed = " ".join(mdrun_options_parsed)
     n_cpu = int(os.environ["SLURM_NPROCS"])
     result = run(
-        f"srun -n {n_cpu} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles}",
+        f"srun -n {n_cpu} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} {mdrun_options_parsed}",
         stdout=PIPE,
         stderr=PIPE,
         shell=True,
