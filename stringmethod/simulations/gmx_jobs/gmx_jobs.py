@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-import mdtools
+import simulations.mdtools as mdtools
 from stringmethod import logger
 
 _instance = None

@@ -7,7 +7,7 @@ from typing import Optional
 
 import numpy as np
 
-import mdtools
+import simulations.mdtools as mdtools
 from stringmethod import logger
 from stringmethod.config import Config
 
@@ -35,9 +35,7 @@ class CvValueExtractor(AbstractPostprocessor):
 
     def _natural_sort(self, l):
         convert = lambda text: int(text) if text.isdigit() else text.lower()
-        alphanum_key = lambda key: [
-            convert(c) for c in re.split("([0-9]+)", key)
-        ]
+        alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
         return sorted(l, key=alphanum_key)
 
     def _do_run(self) -> bool:
@@ -54,13 +52,9 @@ class CvValueExtractor(AbstractPostprocessor):
                 values = np.load(iter_data)
             else:
                 if not self.use_plumed:
-                    iteration_md_dir = "{}/{}/*/s*/*xvg".format(
-                        self.md_dir, it
-                    )
+                    iteration_md_dir = "{}/{}/*/s*/*xvg".format(self.md_dir, it)
                 else:
-                    iteration_md_dir = "{}/{}/*/s*/colvar".format(
-                        self.md_dir, it
-                    )
+                    iteration_md_dir = "{}/{}/*/s*/colvar".format(self.md_dir, it)
                 xvg_files = self._natural_sort(glob.glob(iteration_md_dir))
                 if len(xvg_files) == 0:
                     logger.info(

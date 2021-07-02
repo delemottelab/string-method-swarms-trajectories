@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 
-from gmx_jobs import *
+from simulations.gmx_jobs import *
 from stringmethod import utils
 from stringmethod.config import Config
 from stringmethod.utils.custom import custom_function

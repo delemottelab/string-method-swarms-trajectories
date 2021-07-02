@@ -15,8 +15,7 @@ VERSION = "1.0.0"
 
 __all__ = [
     "config",
-    "steeredmd",
-    "stringmd",
+    "simulations",
     "utils",
     "logger",
     "VERSION",

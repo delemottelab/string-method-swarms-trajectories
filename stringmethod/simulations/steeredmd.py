@@ -6,7 +6,7 @@ from typing import Optional
 
 import numpy as np
 
-from gmx_jobs import gmx_jobs
+from simulations.gmx_jobs import gmx_jobs
 from stringmethod import logger, utils
 from stringmethod.config import Config
 
