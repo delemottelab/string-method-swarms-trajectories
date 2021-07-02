@@ -96,13 +96,13 @@ def mdrun_all(task_list: List[dict]):
                         pass
         dirs = " ".join(output_dirs[:n_jobs])
         del output_dirs[:n_jobs]
-        mpie = (
-            "-n {}".format(len(dirs.split()))
-            if len(dirs.split()) < n_jobs
-            else "-n {}".format(n_jobs)
-        )
+        mpi_ranks = len(dirs.split()) if len(dirs.split()) < n_jobs else n_jobs
+        mpie = f"-n {mpi_ranks}"
+        logger.info(f"Running {n_jobs} simulation with {n_cpu} cpus.")
+        command = f"srun {mpie} gmx_mpi mdrun -cpo state.cpt {infiles} -multidir {dirs} {mdrun_options_parsed}"
+        logger.info(f"Running command {command}")
         result = run(
-            f"srun {mpie} gmx_mpi mdrun -cpo state.cpt {infiles} -multidir {dirs} {mdrun_options_parsed}",
+            command,
             stdout=PIPE,
             stderr=PIPE,
             shell=True,
@@ -136,8 +136,11 @@ def mdrun_one(task: dict):
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
     mdrun_options_parsed = " ".join(mdrun_options_parsed)
     n_cpu = int(os.environ["SLURM_NPROCS"])
+    logger.info(f"Running one simulation with {n_cpu} cpus.")
+    command = f"srun -n {n_cpu} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} {mdrun_options_parsed}"
+    logger.info(f"Running command {command}")
     result = run(
-        f"srun -n {n_cpu} gmx_mpi mdrun -cpt 5 -cpo state.cpt {infiles} {mdrun_options_parsed}",
+        command,
         stdout=PIPE,
         stderr=PIPE,
         shell=True,
