@@ -44,8 +44,8 @@ def grompp_all(task_list: List[dict]):
     from multiprocessing import Pool
 
     proc_per_core = (
-        int(os.environ["SLURM_NTASKS_PER_NODE"])
-        if "SLURM_NTASKS_PER_NODE" in os.environ.keys()
+        int(os.environ["SLURM_CPUS_ON_NODE"])
+        if "SLURM_CPUS_ON_NODE" in os.environ.keys()
         else 1
     )
     with Pool(proc_per_core) as p:
@@ -77,7 +77,7 @@ def mdrun_all(task_list: List[dict]):
     if len(output_dirs) >= n_cpu:
         n_jobs = n_cpu  # one or more batches
     else:
-        cpu_per_node = int(os.environ["SLURM_NTASKS_PER_NODE"])
+        cpu_per_node = int(os.environ["SLURM_CPUS_ON_NODE"])
         divisors = [x for x in range(1, cpu_per_node + 1) if cpu_per_node % x == 0]
         n_jobs = 1
         for div in divisors:
