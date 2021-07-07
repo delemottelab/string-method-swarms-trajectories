@@ -1,10 +1,24 @@
 import os
 import shutil
+import sys
 from glob import glob
 from subprocess import PIPE, run
 from typing import List
 
 import numpy as np
+
+# getting the name of the directory
+# where the this file is present.
+current = os.path.dirname(os.path.realpath(__file__))
+
+# Getting the parent directory name
+# where the current directory is present.
+parent = os.path.dirname(current)
+
+# adding the parent directory to
+# the sys.path.
+sys.path.append(parent)
+
 
 from stringmethod import logger
 
@@ -96,8 +110,7 @@ def mdrun_all(task_list: List[dict]):
                         pass
         dirs = " ".join(output_dirs[:n_jobs])
         del output_dirs[:n_jobs]
-        mpi_ranks = len(dirs.split()) if len(dirs.split()) < n_jobs else n_jobs
-        mpie = f"-n {mpi_ranks}"
+        mpie = f"-n {n_cpu}"
         logger.info(f"Running {n_jobs} simulation with {n_cpu} cpus.")
         command = f"srun {mpie} gmx_mpi mdrun -cpo state.cpt {infiles} -multidir {dirs} {mdrun_options_parsed}"
         logger.info(f"Running command {command}")
