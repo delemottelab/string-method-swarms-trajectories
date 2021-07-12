@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-
-import simulations.mdtools as mdtools
+import stringmethod.simulations.mdtools as mdtools
 from stringmethod import logger
 from stringmethod.config import Config
 
