@@ -1,5 +1,6 @@
 import argparse
 
+from simulations import steeredmd, stringmd
 from stringmethod import *
 
 
@@ -47,17 +48,17 @@ if __name__ == "__main__":
     try:
         logger.info(
             """
-                    
-                    .___     .__                         __    __         .__        ___.    
-                  __| _/____ |  |   ____   _____   _____/  |__/  |_  ____ |  | _____ \_ |__  
-                 / __ |/ __ \|  | _/ __ \ /     \ /  _ \   __\   __\/ __ \|  | \__  \ | __ \ 
-                / /_/ \  ___/|  |_\  ___/|  Y Y  (  <_> )  |  |  | \  ___/|  |__/ __ \| \_\ \ 
+
+                    .___     .__                         __    __         .__        ___.
+                  __| _/____ |  |   ____   _____   _____/  |__/  |_  ____ |  | _____ \_ |__
+                 / __ |/ __ \|  | _/ __ \ /     \ /  _ \   __\   __\/ __ \|  | \__  \ | __ \
+                / /_/ \  ___/|  |_\  ___/|  Y Y  (  <_> )  |  |  | \  ___/|  |__/ __ \| \_\ \
                 \____ |\___  >____/\___  >__|_|  /\____/|__|  |__|  \___  >____(____  /___  /
-                     \/    \/          \/      \/                       \/          \/    \/ 
-            
+                     \/    \/          \/      \/                       \/          \/    \/
+
                 Starting string of swarms simulation by Oliver Fleetwood and Marko Petrovic 2017-2020.
                 https://github.com/delemottelab/string-method-gmxapi
-                
+
                 Version {}
             """.format(
                 VERSION

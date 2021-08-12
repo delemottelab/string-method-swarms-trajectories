@@ -10,9 +10,6 @@ dependencies:
   - python=3.8.5
   - matplotlib
   - seaborn
-  - mpi4py
   - scikit-build
   - setuptools
   - nglview
-  - pip:
-       - gmxapi==0.1.0.1

@@ -6,7 +6,7 @@ from typing import Optional
 
 import numpy as np
 
-from gmx_jobs import gmx_jobs
+from simulations.gmx_jobs import gmx_jobs
 from stringmethod import logger, utils
 from stringmethod.config import Config
 
@@ -21,7 +21,6 @@ class SteeredRunner(object):
     steered_simulation_length_ps: Optional[float] = None
     mdrun_options_steered: Optional[tuple] = None
     use_plumed: Optional[bool] = False
-    use_api: Optional[bool] = True
     grompp_options: Optional[tuple] = None
 
     def __post_init__(self):
@@ -43,9 +42,7 @@ class SteeredRunner(object):
         :return:
         """
         self._create_dir(0)
-        shutil.copy(
-            self.start_coordinates, self._get_md_dir(0) + "/confout.gro"
-        )
+        shutil.copy(self.start_coordinates, self._get_md_dir(0) + "/confout.gro")
         for i in range(len(self.path) - 1):
             self._steer_between_points(i, i + 1)
 
@@ -62,9 +59,7 @@ class SteeredRunner(object):
             self.path[start_point_idx],
             self.path[end_point_idx],
         )
-        pull_rates = (
-            end_point - start_point
-        ) / self.steered_simulation_length_ps
+        pull_rates = (end_point - start_point) / self.steered_simulation_length_ps
         modified_mdp_file = output_dir + "/grompp.mdp"
         shutil.copy(self.mdp_file, modified_mdp_file)
         if not self.use_plumed:
@@ -75,9 +70,7 @@ class SteeredRunner(object):
                 )
                 for cv_idx, rate in enumerate(pull_rates):
                     f.write(
-                        "pull-coord{}-init={}\n".format(
-                            cv_idx + 1, start_point[cv_idx]
-                        )
+                        "pull-coord{}-init={}\n".format(cv_idx + 1, start_point[cv_idx])
                     )
                     f.write("pull-coord{}-rate={}\n".format(cv_idx + 1, rate))
         else:
@@ -87,9 +80,7 @@ class SteeredRunner(object):
                 )
             )
             plumed_file = abspath("{}/plumed.dat".format(output_dir))
-            plumed_template_content = open(
-                plumed_template_file, "r"
-            ).readlines()
+            plumed_template_content = open(plumed_template_file, "r").readlines()
             mdp_options = utils.parse_mdp(self.mdp_file)
             steered_simulation_steps = mdp_options.get("nsteps", 0)
             count = 0
@@ -97,9 +88,7 @@ class SteeredRunner(object):
                 if "XSTART" in line:
                     line = line.replace("XSTART", str(start_point[count]))
                     line = line.replace("XEND", str(end_point[count]))
-                    line = line.replace(
-                        "XTIME", str(int(steered_simulation_steps))
-                    )
+                    line = line.replace("XTIME", str(int(steered_simulation_steps)))
                     count += 1
                     plumed_template_content[n] = line
             with open(plumed_file, "w") as f:
@@ -113,9 +102,7 @@ class SteeredRunner(object):
         # TODO: code duplication from stringmethod.md below. Refactor into common functionality
         tpr_file = "{}/topol.tpr".format(output_dir)
         if os.path.isfile(tpr_file):
-            logger.debug(
-                "File %s already exists. Not running grompp again", tpr_file
-            )
+            logger.debug("File %s already exists. Not running grompp again", tpr_file)
         else:
             in_file = self._get_md_dir(start_point_idx) + "/confout.gro"
             if not os.path.exists(in_file):
@@ -131,7 +118,6 @@ class SteeredRunner(object):
                 structure_file=in_file,
                 tpr_file=tpr_file,
                 mdp_output_file="{}/mdout.mdp".format(output_dir),
-                use_api=self.use_api,
                 grompp_options=self.grompp_options,
             )
             gmx_jobs.submit(
@@ -157,7 +143,6 @@ class SteeredRunner(object):
                 check_point_file=check_point_file,
                 mdrun_options=self.mdrun_options_steered,
                 plumed_file=plumed_file,
-                use_api=self.use_api,
             )
             gmx_jobs.submit(
                 tasks=[("mdrun", mdrun_args)],
@@ -181,7 +166,6 @@ class SteeredRunner(object):
             topology_dir=config.topology_dir,
             mdrun_options_steered=config.mdrun_options_steered,
             use_plumed=config.use_plumed,
-            use_api=config.use_api,
             grompp_options=config.grompp_options,
             **kwargs
         )

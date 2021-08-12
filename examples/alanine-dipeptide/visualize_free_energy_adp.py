@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.append("../../../")
+from matplotlib import colors
+
 from stringmethod.config import *
 from stringmethod.postprocessing import *
-from matplotlib import colors
 
 
 def show(grid: np.array, free_energy: np.array, fe_cut_off: float = 10):

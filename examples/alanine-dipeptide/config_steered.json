@@ -4,6 +4,5 @@
   "log_level": "DEBUG",
   "fixed_endpoints": "true",
   "steered_md_target_path": "strings/string0_radians.txt",
-  "use_plumed": "true",
-  "use_api": "false"
+  "use_plumed": "true"
 }
