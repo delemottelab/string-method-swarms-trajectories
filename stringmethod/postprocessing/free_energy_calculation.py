@@ -19,7 +19,7 @@ class FreeEnergyCalculator(AbstractPostprocessor):
     """Input from previous step"""
     transition_count: np.array
     """Input from previous step"""
-    grid: np.array
+    grid: Optional[np.array] = None
     """detailed_balance regularizes the transition matrix while computing the stationary distribution"""
     method: Optional[str] = "detailed_balance"
     """
@@ -39,15 +39,17 @@ class FreeEnergyCalculator(AbstractPostprocessor):
     _index_converter: Optional[IndexConverter] = None
 
     def __post_init__(self):
-        if len(self.grid.shape) == 1:
-            self.grid = self.grid[:, np.newaxis]
-        self._index_converter = IndexConverter(
-            n_dim=self.grid.shape[1], n_grid_points=self.grid.shape[0]
-        )
+        if self.grid is not None:
+            if len(self.grid.shape) == 1:
+                self.grid = self.grid[:, np.newaxis]
+            self._index_converter = IndexConverter(
+                n_dim=self.grid.shape[1], n_grid_points=self.grid.shape[0]
+            )
 
     def _do_run(self) -> bool:
         self.probability_distribution = self.compute_probability_distribution()
-        self.free_energy = self.compute_free_energy()
+        if self.grid is not None:
+            self.free_energy = self.compute_free_energy()
         return True
 
     def _do_persist(self):
@@ -63,8 +65,11 @@ class FreeEnergyCalculator(AbstractPostprocessor):
         else:
             prob = self._compute_probability_distribution_eigenvector()
         prob = prob.squeeze()
-        prob = self._index_converter.convert_to_grid(prob)
-        return prob[:, np.newaxis] if len(prob.shape) == 1 else prob
+        if self.grid is None:
+            return prob
+        else:
+            prob = self._index_converter.convert_to_grid(prob)
+            return prob[:, np.newaxis] if len(prob.shape) == 1 else prob
 
     def compute_free_energy(self):
         fe = np.empty(self.probability_distribution.shape)
