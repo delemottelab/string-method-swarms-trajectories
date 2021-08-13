@@ -5,12 +5,12 @@ from os.path import abspath
 from typing import Any, Dict, Optional
 
 import numpy as np
-
-from simulations.gmx_jobs import *
 from stringmethod import utils
 from stringmethod.config import Config
 from stringmethod.utils.custom import custom_function
 from stringmethod.utils.scaling import MinMaxScaler
+
+from simulations.gmx_jobs import *
 
 
 @dataclass
@@ -29,7 +29,7 @@ class StringIterationRunner(object):
     mdrun_options_swarms: Optional[tuple] = None
     mdrun_options_restrained: Optional[tuple] = None
     grompp_options: Optional[tuple] = None
-    gpus_per_node: Optional[int] = None
+    # gpus_per_node: Optional[int] = None
     use_function: Optional[bool] = False
     use_plumed: Optional[bool] = False
 
@@ -133,7 +133,7 @@ class StringIterationRunner(object):
                     tpr_file=tpr_file,
                     check_point_file=check_point_file,
                     mdrun_options=self.mdrun_options_restrained,
-                    gpus_per_node=self.gpus_per_node,
+                    # gpus_per_node=self.gpus_per_node,
                     plumed_file=plumed_file,
                 )
                 mdrun_tasks.append(("mdrun", mdrun_args))
@@ -197,7 +197,7 @@ class StringIterationRunner(object):
                         tpr_file=tpr_file,
                         check_point_file=check_point_file,
                         mdrun_options=self.mdrun_options_swarms,
-                        gpus_per_node=self.gpus_per_node,
+                        # gpus_per_node=self.gpus_per_node,
                         plumed_file=plumed_file,
                     )
                     mdrun_tasks.append(("mdrun", mdrun_args))
@@ -350,7 +350,7 @@ class StringIterationRunner(object):
             mdrun_options_swarms=config.mdrun_options_swarms,
             mdrun_options_restrained=config.mdrun_options_restrained,
             grompp_options=config.grompp_options,
-            gpus_per_node=config.gpus_per_node,
+            # gpus_per_node=config.gpus_per_node,
             use_function=config.use_function,
             use_plumed=config.use_plumed,
             **kwargs

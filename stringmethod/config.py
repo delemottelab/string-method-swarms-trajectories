@@ -42,8 +42,8 @@ class Config(object):
     mdrun_options_swarms: Optional[tuple] = None
     """gmx mdrun additional options for restrained simulations"""
     mdrun_options_restrained: Optional[tuple] = None
-    """Number of gpus per node (if using GPU cluster)."""
-    gpus_per_node: Optional[int] = None
+    # """Number of gpus per node (if using GPU cluster)."""
+    # gpus_per_node: Optional[int] = None
     """Use a function to combine cvs"""
     use_function: Optional[bool] = False
     """Use Plumed instead of Gromacs' pull code for defining cvs"""
