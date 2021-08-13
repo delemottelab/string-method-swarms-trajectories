@@ -56,7 +56,8 @@ if __name__ == "__main__":
                 \____ |\___  >____/\___  >__|_|  /\____/|__|  |__|  \___  >____(____  /___  /
                      \/    \/          \/      \/                       \/          \/    \/
 
-                Starting string of swarms simulation by Oliver Fleetwood and Marko Petrovic 2017-2020.
+                Starting string of swarms simulation by Oliver Fleetwood, Sergio Pérez-Conesa and Marko Petrovic 2017-2020.
+                Contributors: Miłosz Wieczór
                 https://github.com/delemottelab/string-method-gmxapi
 
                 Version {}

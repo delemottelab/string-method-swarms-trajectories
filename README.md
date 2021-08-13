@@ -5,44 +5,43 @@
     \____ |\___  >____/\___  >__|_|  /\____/|__|  |__|  \___  >____(____  /___  /
          \/    \/          \/      \/                       \/          \/    \/
 
-    by Oliver Fleetwood, Sergio Pérez-Conesa and Marko Petrovic 2017-2020.
-    https://github.com/delemottelab/string-method-gmxapi
+    by Oliver Fleetwood, Sergio Pérez-Conesa and Marko Petrovic 2017-2021.
+    Collaborators: Miłosz Wieczór
+    https://github.com/delemottelab/string-method-swarms-trajectories
 
 ![Image of string](examples/adp-free_energy_with-string.png)
 
 This repository contains an implementation of the string method with swarms of
 trajectories [[1,2]](#references)
-using [GROMACS' python API](http://manual.gromacs.org/current/gmxapi/userguide/usage.html)[[3,4]](#references).
+using [GROMACS](http://www.gromacs.org/)[[3]](#references).
 
 # Using the code
 
 ## Python dependencies
 
-+ [gmxapi](http://manual.gromacs.org/current/gmxapi/userguide/usage.html)
-linked to [GROMACS](http://manual.gromacs.org/).
++ [GROMACS](http://manual.gromacs.org/).
 + [numpy](https://numpy.org/)
-+ [mpi4py](https://mpi4py.readthedocs.io/en/stable/index.html)
 + [dataclasses](https://anaconda.org/conda-forge/dataclasses)
 + [typing](https://anaconda.org/anaconda/typing)
 + [matplotlib](https://matplotlib.org/) (analysis only)
 
-We plan on automating dependency management with pip or conda.
-
 The environment.yml contains library versions for which the package has been
-tested. The package has been tested with GROMACS2020.2. It's important to note that
-the string-method will use the `gmx` excecutable of gromacs and not the `gmx_mpi` compiled
-version which may produce errors.
+tested. The package has been tested with GROMACS2020.2. For the moment, the problem only
+works with CPUs but it will be adapted to use GPUs in the future.
+The program assumes that if you are using a cluster the queuing system is slurm, but it is easily adaptable to other
+systems. The program computes the string's collective varibles with gromacs' pull-code or
+alternativelly with [plumed](https://www.plumed.org/).
 
 ## Preparing the files
 
-To launch a simulation you first need to set up a system (start.gro, topol.top,
-index.ndx), configure Collective Variables (CVs; a.k.a reaction coordinates)
+To launch a simulation you first need to set up a system `(start.gro`, `topol.top`,
+`index.ndx`), configure Collective Variables (CVs; a.k.a reaction coordinates)
 with GROMACS' pull code (restrained.mdp, swarms.mdp, steered.mdp), and provide
-an initial string (string0.txt).
+an initial string (`string0.txt`).
 We recommend you to use one of the [examples below](examples) as a template.
 There is also a [start-up](examples/start-up/) walks you through file preparation,
- steering simulations, running of the string method and analysis using jupyter
- notebooks and instructions.
+steering simulations, running of the string method and analysis using jupyter
+notebooks and instructions.
 
 
 ### Molecular Dynamics Properties (MDP) files
@@ -59,7 +58,7 @@ In addition to this you need start coordinates to your steered MD simulation
 
 The steered MD engine will generate a simulation that steers the system from
 start.gro through the beads in string0.txt and generates for each of them a
-simulation folder in `md/0/`
+simulation folder in `md/0/`.
 
 #### String method files
 
@@ -70,6 +69,7 @@ You need two `mdp` files:
 Contains the settings to run a short equilibration with pull code restraints
 before launching the swarms. All required pull code parameters except for
 `pull-code-init` should be set in this file. It is likely very similar to `steered.mdp`.
+You can find a template for this file in [start-up](examples/start-up/mdp/).
 
 **swarms.mdp**
 
@@ -77,10 +77,11 @@ Contains the settings to run the unrestrained swarm simulations.
 Note that you still need to define the pull code properties in this file to
 print the CV values to a xvg-file, but no force should be applied.
 This is acheived by seeting `pull-coord-k=0`.
+You can find a template for this file in [start-up](examples/start-up/mdp/).
 
 **Pull code MDP example**
 
-```
+```text
 pull = yes
 pull-ngroups = 2
 pull-group1-name = residue_1 ; name of groups defined in the index file
@@ -90,8 +91,7 @@ pull-group2-name = residue_2
 pull-ncoords = 1
 pull-coord1-geometry = distance
 pull-coord1-groups = 1 2 ; Center of mass distnace between the two groups
-pull-coord1-k = 0 ; strength of harmonic potential. Set to a high value in
-restrained.mdp and to 0 in swarms.mdp
+pull-coord1-k = 0 ; strength of harmonic potential. Set to a high value in restrained.mdp and to 0 in swarms.mdp
 ; .... Define more CVs below
 
 ; Handle output
@@ -100,10 +100,14 @@ pull-nstxout = 50000 ; Step interval to output the coordinate values to the pull
 pull-nstfout = 0
 ```
 
+It is also possible to use [plumed](https://www.plumed.org/) patched into gromacs to provide the string cvs instead
+of gromacs' pull-code. Unfortunatelly, the great flexibility of plumed cvs comes at the cost
+of significant performance reduction. Checkout [start-up](examples/start-up/mdp/) for example plumed entries.
+
 ### Topology
 
-You need to have a valid topology file called **topol.top** and an index file
-called **index.ndx**.The index file should define all groups used by the pull code.
+You need to have a valid topology file called `topol.top` and an index file
+called `index.ndx`.The index file should define all groups used by the pull code.
 
 ### Input string
 
@@ -118,12 +122,12 @@ The first column refers to the first CV/pull coordinate etc.
 
 **Note**: unless you have a trajectory to derive input coordinates from,
 we recommend you to you steered-MD to initialize the simulation.
-If you use the steeredMD script (```python main.py --start_mode=steered```),
+If you use the steeredMD script (`python main.py --start_mode=steered`),
 the string input will be prepared for you. You can use [start-up](#examples/start-up)
 for this.
 
 For every bead on your string your need a snapshot with all atom
-coordinates called **confout.gro**. Create one directory per bead and put the
+coordinates called `confout.gro`. Create one directory per bead and put the
 corresponding snaphot in that directory according to the layout below. I. e.
 `md/0/0/restrained/confout.gro`, `md/0/1/restrained/confout.gro`,
 `md/0/2/restrained/confout.gro`, ...
@@ -131,14 +135,16 @@ You don't need to provide .gro-files for the first and last bead on the string
 if your endpoints are fixed, which is the default.
 
 Note that these snapshots should be well-equilibrated and be *close* to the
-coordinates defined in **string0.txt**. This can for example be acheived by
+coordinates defined in `string0.txt`. This can for example be acheived by
 running steered-MD along your initial string between two endpoints.
 The string simulation will only equilibrate the system according to `nsteps`
-in **restrained.mdp**.
+in `restrained.mdp`.
 
 ### File organization
+
 We recommend you to organize your simulation files according to the following default layout:
-```
+
+```text
 simulation_directory
 ├── config.json
 ├── md
@@ -168,8 +174,8 @@ simulation_directory
     ├── topol.top
 
 ```
-As the program progresses it will create new directories in the **md** directory, one new directory for every string iterations.
-At the end of every iteration, it will output new string coordinates **strings/string1.txt**, **strings/string2.txt**", etc.
+As the program progresses it will create new directories in the `md` directory, one new directory for every string iterations.
+At the end of every iteration, it will output new string coordinates `strings/string1.txt`, `strings/string2.txt`", etc.
 
 We know it requires some effort to get started, but the [start-up](examples/start-up/)
 should make it much easier for you.
@@ -196,8 +202,8 @@ You can also change the location of the input/output directories.
  Same as mdrun_options_stereed but for restrained simulations.
 + grompp_options=list_of_strings (default: []).
  Options for grompp commands. Usefull for example to add ["-maxwarn", "1"].
-+ gpus_per_node=int (default: None). Number of GPUs per node. If more than one
-node is used all nodes must have the same number of GPUs.
++ use_plumed=bool (default: false)
+Use plumed instead of gromacs' plumed code.
 
 ## Running a string simulation
 
@@ -229,19 +235,12 @@ probably need to run the string method in a distributed environment.
 
 The string method is well-suited for distributed computing,
 where the independent MD simulations run in parallel with very little inter-process communication.
-The program implements a master-slave architecture for running multi-node simulations.
-One MPI rank, i.e. the master, won't run GROMACS; it will run the main python script and tell all the other MPI ranks what to do.
-The other MPI ranks, the slaves, will receive instructions on what GROMACS commands to execute from the master.
-When they are finished they'll notify the master and receive new jobs, if there are any.
+The program makes use of the `-multidir` option to efficiently run in parallel many simulations.
+The amount of simulations it can run simultaneously depends on the number of mpiranks available.
+The only restriction is that the number of physical-cores should be divisible by the number of beads
+and the number of swarms per bead.
 
-If the nodes of your HPC cluster are GPU nodes, this is also of great advantage.
-In this case you will set up one mpi rank per-GPU. In this way, you will have one
-simulation running per GPU in parallel each with one GPU, one mpi-rank and as many
-threads as you can distribute per mpi rank.
-
-To see details on the parallelization and performance enhancement of the string
-method please read in detail [PERFORMANCE.md](PERFORMANCE.md). You also have
-slurm script files in [start-up](examples/start-up/).
+You also have slurm script files in [start-up](examples/start-up/).
 
 ### Handling restarts
 
@@ -251,16 +250,15 @@ Optionally you can start the python script with a flag --iteration=X,
 then it will start from that step directly. In this way, you don't spend time checking
 that all files are there which can be slow if many iterations have been already run.
 
-
 ### Recovering after a crash
 
 Assume that your simulation files are corrupt or that you realize your mdp
 options are incorrect, and you need to rerun part of the simulation.
 Since the files are organized in a tree structure, it's easy to delete the
-directory of a failing iteration or point.
+directory of a failing iteration.
 Then when you restart that directory will be recreated.
 
-To avoid the generation of corrupt files, each slurm submission should generate
+To avoid the generation of corrupt files, each slurm job should generate
 an integer number of iterations before exiting thus avoiding terminating the
 slurm job with a time-out. The slurm files in [start-up](#examples/start-up/)
 are configured to this effect.
@@ -318,4 +316,3 @@ problem.
 1. Pan, Albert C., Deniz Sezer, and Benoît Roux. "Finding transition pathways using the string method with swarms of trajectories." The journal of physical chemistry B 112.11 (2008): 3432-3440.
 2. Fleetwood, Oliver, et al. "Energy Landscapes Reveal Agonist Control of G Protein-Coupled Receptor Activation via Microswitches." Biochemistry 59.7 (2020): 880-891.
 3. Abraham, Mark James, et al. "GROMACS: High performance molecular simulations through multi-level parallelism from laptops to supercomputers." SoftwareX 1 (2015): 19-25.
-4. Irrgang, M. Eric, Jennifer M. Hays, and Peter M. Kasson. "gmxapi: a high-level interface for advanced control and extension of molecular dynamics simulations." Bioinformatics 34.22 (2018): 3945-3947.
