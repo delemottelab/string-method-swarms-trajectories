@@ -21,8 +21,6 @@ using [GROMACS](http://www.gromacs.org/)[[3]](#references).
 
 + [GROMACS](http://manual.gromacs.org/).
 + [numpy](https://numpy.org/)
-+ [dataclasses](https://anaconda.org/conda-forge/dataclasses)
-+ [typing](https://anaconda.org/anaconda/typing)
 + [matplotlib](https://matplotlib.org/) (analysis only)
 
 The `environment.yml` and `environment_exaxt.yml` contain the packages and versions for

@@ -13,5 +13,3 @@ dependencies:
   - scikit-build
   - setuptools
   - nglview
-  - typing
-  - dataclasses
