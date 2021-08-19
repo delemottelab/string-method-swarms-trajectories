@@ -20,11 +20,9 @@ using [GROMACS](http://www.gromacs.org/)[[3]](#references).
 ## Python dependencies
 
 + [GROMACS](http://manual.gromacs.org/).
-+ [numpy](https://numpy.org/)
-+ [matplotlib](https://matplotlib.org/) (analysis only)
++ [numpy](https://numpy.org/) 1.20.1
 
-The `environment.yml` and `environment_exaxt.yml` contain the packages and versions for
-which the package has been tested. The package has been tested with GROMACS2020.2. For the moment, the problem only
+The package has been tested with GROMACS2020.2. For the moment, the problem only
 works with CPUs but it will be adapted to use GPUs in the future.
 The program assumes that if you are using a cluster the queuing system is slurm, but it is easily adaptable to other
 systems. The program computes the string's collective varibles with gromacs' pull-code or
