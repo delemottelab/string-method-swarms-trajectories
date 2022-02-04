@@ -42,8 +42,10 @@ def grompp_one(args: dict):
     else:
         gmx = "srun -n 1 gmx_mpi"
     parse_options = " ".join(grompp_options)
+    command = f"{gmx} grompp {parse_options} {infiles} {outfiles}"
+    logger.info(f"Running command {command}")
     result = run(
-        f"{gmx} grompp {parse_options} {infiles} {outfiles}",
+            command,
         stdout=PIPE,
         stderr=PIPE,
         shell=True,
