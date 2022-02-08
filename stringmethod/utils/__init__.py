@@ -1,2 +1,2 @@
-from .mdp_parser import *
-from .string_reparametrization import *
+from stringmethod.utils.mdp_parser import *
+from stringmethod.utils.string_reparametrization import *
