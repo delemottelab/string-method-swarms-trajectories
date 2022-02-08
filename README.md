@@ -19,16 +19,18 @@ using [GROMACS](http://www.gromacs.org/)[[3]](#references).
 
 ## Python dependencies
 
-+ [GROMACS](http://manual.gromacs.org/).
-+ [numpy](https://numpy.org/)
++ [Python](https://python.org) 3.8
++ [GROMACS](http://manual.gromacs.org/)
++ [numpy](https://numpy.org/) 1.22.1
 + [matplotlib](https://matplotlib.org/) (analysis only)
++ [slurm](https://slurm.schedmd.com/documentation.html) (optional)
++ [plumed](https://www.plumed.org/)) (optional)
 
-The `environment.yml` and `environment_exaxt.yml` contain the packages and versions for
-which the package has been tested. The package has been tested with GROMACS2020.2. For the moment, the problem only
+The package has been tested with GROMACS2020.2. For the moment, the problem only
 works with CPUs but it will be adapted to use GPUs in the future.
 The program assumes that if you are using a cluster the queuing system is slurm, but it is easily adaptable to other
-systems. The program computes the string's collective varibles with gromacs' pull-code or
-alternativelly with [plumed](https://www.plumed.org/).
+systems. The program computes the string's collective variables with gromacs' pull-code or
+alternatively with [plumed](https://www.plumed.org/).
 
 ## Preparing the files
 
@@ -73,7 +75,7 @@ You can find a template for this file in [start-up](examples/start-up/mdp/).
 Contains the settings to run the unrestrained swarm simulations.
 Note that you still need to define the pull code properties in this file to
 print the CV values to a xvg-file, but no force should be applied.
-This is acheived by seeting `pull-coord-k=0`.
+This is achieved by setting `pull-coord-k=0`.
 You can find a template for this file in [start-up](examples/start-up/mdp/).
 
 **Pull code MDP example**
@@ -98,7 +100,7 @@ pull-nstfout = 0
 ```
 
 It is also possible to use [plumed](https://www.plumed.org/) patched into gromacs to provide the string cvs instead
-of gromacs' pull-code. Unfortunatelly, the great flexibility of plumed cvs comes at the cost
+of gromacs' pull-code. Unfortunately, the great flexibility of plumed cvs comes at the cost
 of significant performance reduction. Checkout [start-up](examples/start-up/mdp/) for example plumed entries.
 
 ### Topology
@@ -126,14 +128,14 @@ for this.
 
 For every bead on you string your need a file with all atom
 coordinates called `confout.gro`. Create one directory per bead and put the
-corresponding snaphot in that directory according to the layout below:
+corresponding snapshot in that directory according to the layout below:
 `md/0/0/restrained/confout.gro`, `md/0/1/restrained/confout.gro`,
 `md/0/2/restrained/confout.gro`, ...
 You don't need to provide .gro-files for the first and last bead on the string
 if your endpoints are fixed, which is the default.
 
 Note that these structures should be well-equilibrated and be *close* to the
-coordinates defined in `string0.txt`. This can for example be acheived by
+coordinates defined in `string0.txt`. This can for example be achieved by
 running steered-MD along your initial string between two endpoints.
 The string simulation will only equilibrate the system according to `nsteps`
 in `restrained.mdp`.
@@ -198,7 +200,7 @@ or not.
 + **mdrun_options_restrained=list_of_strings (default: [ ] )**:
  Same as mdrun_options_stereed but for restrained simulations.
 + **grompp_options=list_of_strings (default: [ ])**:
- Options for grompp commands. Usefull for example to add ["-maxwarn", "1"].
+ Options for grompp commands. Useful for example to add ["-maxwarn", "1"].
 + **use_plumed=bool (default: false)**:
 Use [plumed](https://www.plumed.org/) instead of gromacs' code.
 
@@ -219,7 +221,7 @@ python main.py --config_file=config.json
 
 This will run all the simulations in sequential order, first restrained simulations
 all beads, then all swarm trajectories per bead.
-Here we've also provided an optional config file.
+Here we've also provided an optional `config.json` file.
 You can also set the parameter `start_mode=steered` or `start_mode=postprocessing`
 to run steeredMD or postprocessing.
 
@@ -227,6 +229,8 @@ Postprocessing computes the free energy surface and generates the count matrix.
 
 In practice, unless the machine has hardware acceleration (i.e. a GPU) you
 probably need to run the string method in a distributed environment.
+
+Single machine runs are currently not working, the fix is WIP.
 
 ### Running with MPI in a HPC environment
 
@@ -286,7 +290,7 @@ If you have high free energy barriers you still need transitions along them to g
 In the **examples** directory you'll find complete sets of input files for running a simulation.
 These can be used for testing your python environment or as a template to set up your own simulation.
 
-## Alanine dipeptide in vaccuum
+## Alanine dipeptide in vaccuum (WIP)
 We analyze the transition between two metastable states of alanine dipeptide using the two dihedral angles ϕ and Ψ.
 This simulation can run on a regular laptop. Using GPU acceleration in this small system may result in slower simulations.
 
@@ -297,7 +301,7 @@ This simulation takes time. To obtain useful results you need a desktop with a g
 
 ## Start-up: tutorial/how to.
 In this example you will find instructions and jupyter notebooks to prepare input
-files, run steering simulations, run string simulations and analise the results.
+files, run steering simulations, run string simulations and analyze the results.
 The example is carried out with the beta2 receptor but can be adapted to any
 problem.
 
