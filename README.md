@@ -7,6 +7,7 @@
 
     by Oliver Fleetwood, Sergio Pérez-Conesa and Marko Petrovic 2017-2021.
     Collaborators: Miłosz Wieczór
+    Maintained: Sergio Pérez-Conesa
     https://github.com/delemottelab/string-method-swarms-trajectories
 
 ![Image of string](examples/adp-free_energy_with-string.png)
