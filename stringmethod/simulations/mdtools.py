@@ -37,10 +37,10 @@ def grompp_one(args: dict):
     output_files = {"-o": args["tpr_file"], "-po": args["mdp_output_file"]}
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
     outfiles = " ".join([k + " " + v for k, v in output_files.items()])
-    if shutil.which("gmx_mpi") is None:
-        gmx = "gmx"
-    else:
+    if shutil.which("gmx") is None:
         gmx = "srun -n 1 gmx_mpi"
+    else:
+        gmx = "gmx"
     parse_options = " ".join(grompp_options)
     command = f"{gmx} grompp {parse_options} {infiles} {outfiles}"
     logger.info(f"Running command {command}")
