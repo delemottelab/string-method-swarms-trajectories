@@ -29,7 +29,11 @@ using [GROMACS](http://www.gromacs.org/)[[3]](#references).
 The package has been tested with GROMACS2020.2. For the moment, the problem only
 works with CPUs but it will be adapted to use GPUs in the future.
 The program assumes that if you are using a cluster the queuing system is slurm, but it is easily adaptable to other
-systems. The program computes the string's collective variables with gromacs' pull-code or
+systems. The program should find in the path a `gmx_mpi` binary to run the simulations and a non-mpi version of the program `gmx` or `gmx_seq` to run the `grompp` commands. 
+
+**Warning**: if only `gmx_mpi` is available grompps are run with `srun -n 1 gmx_mpi grompp`. This has made in occasions the slurm server unstable and you might receive an  email from your sysadim asking you to explain why you send 300 jobs of milisecond duration in the timelapse of a second.
+
+The program computes the string's collective variables with gromacs' pull-code or
 alternatively with [plumed](https://www.plumed.org/).
 
 ## Preparing the files
