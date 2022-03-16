@@ -37,15 +37,20 @@ def grompp_one(args: dict):
     output_files = {"-o": args["tpr_file"], "-po": args["mdp_output_file"]}
     infiles = " ".join([k + " " + v for k, v in input_files.items()])
     outfiles = " ".join([k + " " + v for k, v in output_files.items()])
-    if shutil.which("gmx") is None:
-        gmx = "srun -n 1 gmx_mpi"
-    else:
+    if shutil.which("gmx_seq") is not None:
+        gmx = "gmx_seq"
+    elif shutil.which("gmx") is not None:
         gmx = "gmx"
+    else:
+        gmx = "srun -n 1 gmx_mpi"
+        logger.warning(
+            "The program is calling many times `srun -n 1 gmx_mpi grompp` in a short period of time. So much communication with the slurm server can cause problems. Please try to have an accesible gmx binary that doesn't require srun."
+        )
     parse_options = " ".join(grompp_options)
     command = f"{gmx} grompp {parse_options} {infiles} {outfiles}"
     logger.info(f"Running command {command}")
     result = run(
-            command,
+        command,
         stdout=PIPE,
         stderr=PIPE,
         shell=True,
