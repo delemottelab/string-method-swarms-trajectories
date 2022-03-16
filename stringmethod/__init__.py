@@ -11,7 +11,7 @@ logging.basicConfig(
 
 logger: Logger = logging.getLogger("stringmethod")
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 
 __all__ = [
     "config",
