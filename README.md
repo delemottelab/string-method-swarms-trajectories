@@ -19,12 +19,12 @@ using [GROMACS](http://www.gromacs.org/)[[3]](#references).
 
 ## Python dependencies
 
-+ [Python](https://python.org) 3.8
++ [Python](https://python.org) 3.8+
 + [GROMACS](http://manual.gromacs.org/)
-+ [numpy](https://numpy.org/) 1.22.1
-+ [matplotlib](https://matplotlib.org/) (analysis only)
-+ [slurm](https://slurm.schedmd.com/documentation.html) (optional)
-+ [plumed](https://www.plumed.org/)) (optional)
++ [numpy](https://numpy.org/) 
++ [slurm](https://slurm.schedmd.com/documentation.html) (soon will be optional)
++ [plumed](https://www.plumed.org/) (optional)
++ Additional packages for analysis. (optional)
 
 The package has been tested with GROMACS2020.2. For the moment, the problem only
 works with CPUs but it will be adapted to use GPUs in the future.
