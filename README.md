@@ -168,9 +168,7 @@ simulation_directory
 │   ├── restrained.mdp
 │   └── swarms.mdp
 │   └── steered.mdp
-├── strings.txt
-│   ├── rescale_string.py
-│   ├── string0-scaled.txt
+├── strings
 │   └── string0.txt
 └── topology
     ├── end.gro
