@@ -216,7 +216,7 @@ The program can run either in an MPI environment, automatically distributing
 the work to multiple nodes, or on a single machine.
 
 
-### Running on a single machine
+### Running on a single machine (WIP)
 
 ```bash
 python main.py --config_file=config.json
