@@ -1,67 +1,48 @@
 #!/bin/bash -l
 
 # Include your account in your cluster.
-#SBATCH --account=2020-3-28
+#SBATCH --account=snic2021-3-15
 # The name of the job in the queue
-#SBATCH --job-name=my_string_simulation
+#SBATCH --job-name=string
+#SBATCH --partition main
 
 # Output file names for stdout and stderr
-#SBATCH --error=string-%j-%A_%a.err
-#SBATCH --output=string-%j-%A_%a.out
+#SBATCH --error=slurm_out/string-%J_%a.err
+#SBATCH --output=slurm_out/string-%J_%a.out
 
 # Add your email below.
 # Receive e-mails when your job fails
-#SBATCH --mail-user=anynomous@scilifelab.se
-#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=sergiopc@kth.se
+#SBATCH --mail-type=ALL
 
 # Time should slightly greater than the time for one full iteration
 # if you want to do one iteration per slurm job (recomended).
 # If you can allocate big chunks of time in your cluster you can put the time
 # of N-iterations and add this number of interations in the variable
 # `max_iteration=$((($iteration+1)))` bellow.
-#SBATCH --time=4:00:00
+#SBATCH --time=0:30:00
 
 # Total number of nodes and MPI tasks
 # This number of nodes and tasks has been found to work well for 60-80k atoms in beskow (@DelemotteLab).
 # You can of course adapt it to your HPC environment following the guidelines of the main README.md
 
 # Number of nodes and number of MPI tasks per node
-#SBATCH --nodes=8
+#SBATCH --nodes=4
 # In slurm jargon tasks is like MPI-ranks
-#SBATCH --ntasks-per-node=32
+#SBATCH --ntasks-per-node=128
 
 # Choose version of gromacs
-module unload gromacs
-module load gromacs/2020.5
+ml PDC
+ml GROMACS/2020.5-cpeCray-21.11
+ml Anaconda3/2021.05
 
-# Path to string-method-gmxapi
-path_string_method_gmxapi=../../../string-method-gmxapi
-
-# Path to anaconda3 instalation with string_method environment
-my_conda_env=/cfs/klemming/nobackup/s/sergiopc/anaconda3
-
-
-######################  DON'T MODIFY ###############################
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-var=$("${my_conda_env}/bin/conda" 'shell.bash' 'hook' 2> /dev/null)
-__conda_setup=$var
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "$my_conda_env/etc/profile.d/conda.sh" ]; then
-        . "$my_conda_env/etc/profile.d/conda.sh"
-    else
-        export PATH="$my_conda_env/bin/$PATH"
-    fi
-fi
-unset __conda_setup
-conda activate string_method
+# Path to string-method repostory
+path_string_method=../../../string-method-swarms-trajectories
 
 # This code finds the last iteration done a feeds it to the string-method so
 # it doesn't have to check every directory in md/
 
-iteration=$(ls -vd md/*|tail -n 1|sed  "s:md/\([0-9]*\):\1:")
+iteration=$(ls -vd strings/string[0-9]*.txt|tail -n 1| sed  "s:strings/string\([0-9]*\).txt:\1:")
 
 ######################  MODIFY ###############################
 
@@ -82,8 +63,7 @@ sed -i "s/\"max_iterations\": [0-9]*/\"max_iterations\": $max_iteration/" config
 # work well for 60-80k atoms in beskow (@DelemotteLab).
 # You can of course adapt it to your HPC environment following the guidelines
 # of the main README.md
-iteration=$((($iteration-1)))
-cmd="mpiexec -n 257 `which python`  ${path_string_method_gmxapi}/main.py --config_file=config.json --iteration=$iteration"
+cmd="`which python`  ${path_string_method}/stringmethod/main.py --config_file=config.json"
 echo "Command Run:"
 echo $cmd
 
