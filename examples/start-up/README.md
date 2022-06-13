@@ -16,7 +16,7 @@ To run string-method simulations you will need:
 + A end state configuration (this one you don't strickly need):
 `topology/end.gro`.
 + A topology file with gmx topology: `topology/topol.top`.
-+ A gmx index file: `topology/index0.ndx`. Note it's index0.ndx.
++ A gmx index file: `topology/index0.ndx`. Note it's `index0.ndx`.
 + An idea of which distances between groups of atom/s could be good cvs for the
 string. i. e. "The distance between the centers of mass of resid 1 and resid 14"
 and/or "The distance between CB atoms of resid 131 and resid 378".
@@ -38,17 +38,12 @@ configurations can also be generated from steering simulations.
 ## Geting started
 
 First of all you need to install some python libraries. The most convenient way
-to do this is with anaconda3. Gromacs must be available on the path and to
-install gmxapi the environment variable `GMXTOOLCHAINDIR` must be set. gmxapi
-can be tricky to install sometimes, but their developers are very nice and
-can answer your issues in their [github](https://github.com/kassonlab/gmxapi/issues).
+to do this is with anaconda3. 
 Getting nglview to work can be tricky too but it is not necessary to use, it
 just to visualize things in the notebook. You can always use alternitavelly some
 other visualization software.
 
 ```bash
-# SUFFIX are the typical suffixes of gmx "_d", "_mpi" or "".
-export GMXTOOLCHAINDIR=/path/to/gromacs/share/cmake/gromacs${SUFFIX}
 conda env create -f environment.yml
 conda activate string_method
 ```
@@ -67,24 +62,19 @@ If you already have the starting configurations of the beads of the string you
 can just add them as `md/0/0/restrained/confout.gro`,
 `md/0/1/restrained/confout.gro`, ...
 
-Otherwise, send this directory to your favourite HPC cluster (tcblab for
+Otherwise, send this directory to your favourite HPC cluster (dardel for
 @DelemotteLab). Modify according to the instructions inside
-`slurm_steering_tcblab.sh` to your user, anaconda environment and/or HPC set-up.
+`slurm_steering_dardel.sh` to your user, anaconda environment and/or HPC set-up.
 
 Check that `config_steered.json` has the options you want for the steering run.
 You can also modify the options passed to `gmx mdrun` with the
 "mdrun\_options\_steered" for example to give multithread.
 
-The steering simulation can only be run with a single rank. Therefore
-acceleration can only be done using GPUs (one or multiple, no need to add any
-options to the `config_steered.json`) or using several threads (adding
-"mdrun\_options\_steered": ["-nt","number\_of\_threads\_in\_node"] to
-`config_steered`).
-
-Once you are happy with the set-up just send the job to queue.
+Once you are happy with the set-up just send the job to queue. You might have to send the script
+several times and the simulations are restarted where they where left off.
 
 ```bash
-sbatch slurm_steering_tcblab.sh
+sbatch slurm_steering_dardel.sh
 ```
 
 ## Check the initial string and configs
@@ -96,25 +86,23 @@ the `string0.txt` and the initial configs.
 ## Running String Simulation
 
 At this point we are ready to start the string simulation. Go to the
-`slurm_string_method_beskow.sh` slurm file and edit it to adapt it to the your
+`slurm_string_dardel.sh` slurm file and edit it to adapt it to the your
 HPC environment. This slurm script can be tailored easily for different
 HPC environments.
 To choosed the number of threads per rank and adapt `config.json` accordingly.
-If you plan on using GPUs you probably want to use
-`slurm_string_method_tcblab.sh` and adapt `config.json` accordingly.
-Most of these things are done using the "mdrun\_options\_swarms" and/or
-"mdrun\_options\_restrained".
+Using the "mdrun\_options\_swarms" and/or
+"mdrun\_options\_restrained" you can modify the mdrun parameters.
 
-Once you have prepared the `slurm_string_method_beskow.sh` you can send it as:
+Once you have prepared the `slurm_string_dardel.sh` you can send it as:
 
 ```bash
-sbatch slurm_string_method_beskow.sh
+sbatch slurm_string_dardel.sh
 ```
 
 But if you choose to do the preparation where one job equals one string
 iteration (this is how `slurm_string_method_beskow.sh` works),
 you can take advantage of [slurm-arrays](https://slurm.schedmd.com/job_array.html).
-The option `--array=1-100%1` will send 100 `slurm_string_method_beskow.sh`
+The option `--array=1-100%1` will send 100 `slurm_string_dardel.sh`
 jobs that will execute one after the other.
 
 ```bash
