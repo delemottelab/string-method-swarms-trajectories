@@ -151,3 +151,9 @@ examples/start-up/md/*
 examples/start-up/topology/index.ndx
 examples/start-up/strings/string0.txt
 examples/start-up/cv.pkl
+
+examples/start-up/slurm_out/steered.err
+examples/start-up/slurm_out/steered.out
+examples/start-up/slurm_out/string-429634_4294967294.err
+examples/start-up/slurm_out/string-429634_4294967294.out
+examples/start-up/topology/show_cv.tcl
