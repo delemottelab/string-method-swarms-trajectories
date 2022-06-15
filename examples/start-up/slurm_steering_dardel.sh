@@ -22,7 +22,7 @@
 ######################  MODIFY ###############################
 
 # Number of nodes and number of MPI tasks per node
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 # In slurm jargon tasks is like MPI-ranks
 #SBATCH --ntasks-per-node=128
 

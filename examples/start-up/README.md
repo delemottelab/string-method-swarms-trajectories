@@ -3,8 +3,7 @@
 This is a small tutorial on how to set up simple (but powerfull) string-method
 simulations from scratch. The slurm-files are adapted the supercomputing
 environments of the @DelemotteLab but should be adaptable to any other HPC
-centers. Please checkout [PERFORMANCE.md](../../PERFORMANCE.md) for details on
-performance and how to run the simulations in parallel and/or with GPUs.
+centers.
 
 The files are an example of string-simulation of the beta2 adrenergic receptor.
 
@@ -38,7 +37,7 @@ configurations can also be generated from steering simulations.
 ## Geting started
 
 First of all you need to install some python libraries. The most convenient way
-to do this is with anaconda3. 
+to do this is with anaconda3.
 Getting nglview to work can be tricky too but it is not necessary to use, it
 just to visualize things in the notebook. You can always use alternitavelly some
 other visualization software.
