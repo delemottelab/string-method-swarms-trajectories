@@ -23,7 +23,7 @@ ld-seed = -1
 dt                      = 0.002
 nstlist                 = 20
 ; These are the number of steeps of the steering simulation b/ bead n and bead n+1
-; Keep in mind that in total the steering will last n_beads x nsteps. 
+; Keep in mind that in total the steering will last n_beads x nsteps.
 nsteps                  = 1500000
 nstxtcout               = 15000
 rlist                   = 1.2
@@ -41,7 +41,7 @@ rvdw                    = 1.2
 tcoupl                  = V-rescale
 tc_grps                 = protein waters_or_ions lipids
 tau_t                   = 1.0    1.0    1.0
-ref_t                   = 300. 300. 300. 
+ref_t                   = 300. 300. 300.
 gen-temp                 = 300
 ;
 pcoupl                  = Parrinello-Rahman
@@ -49,7 +49,7 @@ pcoupltype              = semiisotropic
 tau_p                   = 5.0
 compressibility         = 4.5e-5  4.5e-5
 ref_p                   = 1.0     1.0
-DispCorr                = EnerPres  ; account for cut-off vdW scheme
+DispCorr                = no  ; account for cut-off vdW scheme
 ;
 constraints             = h-bonds
 constraint_algorithm    = LINCS
